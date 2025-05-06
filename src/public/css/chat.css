@@ -79,7 +79,7 @@ body {
 
 #messages li strong {
   color: var(--primary-color);
-  margin-right: 8px;
+  margin-right: 10px;
 }
 
 #messages li .timestamp {
