@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Join Chat</title>
+  <link rel="stylesheet" href="./css/homepage.css">
+</head>
+<body>
+  <div id="main">
+    <h1>Welcome to the Chat App</h1>
+    <h4>Enter your name to join</h4>
+    <input id="username-input" placeholder="Enter name..." />
+    <button id="btn">Join</button>
+  </div>
+
+  <button id="toggle-theme">Dark Mode</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const btn = document.getElementById("btn");
+    const themeBtn = document.getElementById("toggle-theme");
+
+    btn.addEventListener("click", () => {
+      const username = document.getElementById("username-input").value.trim();
+      if (username) {
+        localStorage.setItem("username", username);
+        window.location.href = "/chat";
+      } else {
+        alert("Enter a username");
+      }
+    });
+
+    themeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      updateThemeLabel();
+    });
+
+    function updateThemeLabel() {
+      themeBtn.textContent = document.body.classList.contains("dark") ? "Light Mode" : "Dark Mode";
+    }
+
+    updateThemeLabel();
+  </script>
+</body>
+</html>
