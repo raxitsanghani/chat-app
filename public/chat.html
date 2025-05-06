@@ -1,0 +1,131 @@
+<<<<<<< HEAD
+
+=======
+>>>>>>> 55a8a23 (Your commit message)
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat Room</title>
+  <link rel="stylesheet" href="./css/chat.css">
+</head>
+<body>
+  <ul id="messages"></ul>
+  <p id="typing-indicator"></p>
+  <form id="form">
+<<<<<<< HEAD
+    <input id="input" autocomplete="off" /><button>Send</button>
+=======
+    <input id="input" autocomplete="off" placeholder="Type a message..." /><button>Send</button>
+>>>>>>> 55a8a23 (Your commit message)
+    <button id="exit" type="button">Exit</button>
+  </form>
+  <button id="toggle-theme">Dark Mode</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const username = localStorage.getItem("username");
+    const form = document.getElementById("form");
+    const input = document.getElementById("input");
+    const messages = document.getElementById("messages");
+    const typingIndicator = document.getElementById("typing-indicator");
+    const themeBtn = document.getElementById("toggle-theme");
+<<<<<<< HEAD
+=======
+    let typingTimeout;
+>>>>>>> 55a8a23 (Your commit message)
+
+    if (!username) {
+      window.location.href = "/";
+    }
+
+    socket.emit("join", username);
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (input.value) {
+        const msgData = {
+          username,
+          message: input.value,
+          timestamp: new Date().toLocaleTimeString(),
+        };
+        socket.emit("chat message", msgData);
+        input.value = "";
+        socket.emit("stop typing");
+      }
+    });
+
+    input.addEventListener("input", () => {
+      socket.emit("typing", username);
+<<<<<<< HEAD
+      setTimeout(() => socket.emit("stop typing"), 1000);
+=======
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => socket.emit("stop typing"), 1000);
+>>>>>>> 55a8a23 (Your commit message)
+    });
+
+    document.getElementById("exit").addEventListener("click", () => {
+      localStorage.removeItem("username");
+      window.location.href = "/";
+    });
+
+    socket.on("chat message", (data) => {
+      const item = document.createElement("li");
+<<<<<<< HEAD
+      item.innerHTML = `<strong>${data.username}</strong>: ${data.message} <span class="timestamp">${data.timestamp}</span>`;
+=======
+      item.className = data.username === username ? "own-message" : "";
+      item.innerHTML = `
+        <strong>${data.username}</strong>
+        <span class="message-content">${data.message}</span>
+        <span class="timestamp">${data.timestamp}</span>
+      `;
+>>>>>>> 55a8a23 (Your commit message)
+      messages.appendChild(item);
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+    socket.on("notification", (msg) => {
+      const item = document.createElement("li");
+<<<<<<< HEAD
+      item.textContent = msg;
+      item.style.color = "green";
+=======
+      item.className = "notification";
+      item.textContent = msg;
+>>>>>>> 55a8a23 (Your commit message)
+      messages.appendChild(item);
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+    socket.on("typing", (username) => {
+      typingIndicator.textContent = `${username} is typing...`;
+<<<<<<< HEAD
+    });
+
+    socket.on("stop typing", () => {
+      typingIndicator.textContent = "";
+=======
+      typingIndicator.style.display = "block";
+    });
+
+    socket.on("stop typing", () => {
+      typingIndicator.style.display = "none";
+>>>>>>> 55a8a23 (Your commit message)
+    });
+
+    themeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      updateThemeLabel();
+    });
+
+    function updateThemeLabel() {
+      themeBtn.textContent = document.body.classList.contains("dark") ? "Light Mode" : "Dark Mode";
+    }
+
+    updateThemeLabel();
+  </script>
+</body>
+</html>
