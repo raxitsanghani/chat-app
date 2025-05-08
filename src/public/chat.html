@@ -4,12 +4,67 @@
   <meta charset="UTF-8" />
   <title>Chat Room</title>
   <link rel="stylesheet" href="./css/chat.css">
+  <link rel="stylesheet" href="css/chat.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    #messages {
+      list-style-type: none;
+      margin: 0;
+      padding: 10px;
+      height: 400px; /* Key to allow scrolling */
+      overflow-y: auto; /* Enable vertical scroll */
+      border: 1px solid #ccc;
+      background: #f9f9f9;
+    }
+
+    .own-message {
+      font-weight: bold;
+    }
+
+    .timestamp {
+      margin-left: 10px;
+      font-size: 0.8em;
+      color: gray;
+    }
+
+    .notification {
+      font-style: italic;
+      color: #555;
+    }
+
+    body.dark {
+      background: #111;
+      color: #eee;
+    }
+
+    body.dark #messages {
+      background: #222;
+      color: #eee;
+      border-color: #444;
+    }
+
+    body.dark input,
+    body.dark button {
+      background: #333;
+      color: #eee;
+      border: 1px solid #555;
+    }
+  </style>
 </head>
 <body>
-  <ul id="messages"></ul>
+  <ul id="messages">
+    <li><strong class="username">Alice</strong>: Hello!</li>
+  </ul>
+  
   <p id="typing-indicator"></p>
   <form id="form">
-    <input id="input" autocomplete="off" placeholder="Type a message..." /><button>Send</button>
+    <input id="input" autocomplete="off" placeholder="Type a message..." />
+    <button>Send</button>
     <button id="exit" type="button">Exit</button>
   </form>
   <button id="toggle-theme">Dark Mode</button>
@@ -24,6 +79,21 @@
     const typingIndicator = document.getElementById("typing-indicator");
     const themeBtn = document.getElementById("toggle-theme");
     let typingTimeout;
+
+    const userColors = {};
+
+    function getUserColor(name) {
+      if (!userColors[name]) {
+        const hash = [...name].reduce((a, c) => a + c.charCodeAt(0), 0);
+        const hue = hash % 360;
+        userColors[name] = `hsl(${hue}, 70%, 50%)`;
+      }
+      return userColors[name];
+    }
+
+    function scrollToBottom() {
+      messages.scrollTop = messages.scrollHeight;
+    }
 
     if (!username) {
       window.location.href = "/";
@@ -59,13 +129,24 @@
     socket.on("chat message", (data) => {
       const item = document.createElement("li");
       item.className = data.username === username ? "own-message" : "";
-      item.innerHTML = `
-        <strong>${data.username}</strong>
-        <span class="message-content">${data.message}</span>
-        <span class="timestamp">${data.timestamp}</span>
-      `;
+
+      const nameEl = document.createElement("strong");
+      nameEl.textContent = data.username;
+      nameEl.style.setProperty("color", getUserColor(data.username));
+
+      const messageContent = document.createElement("span");
+      messageContent.className = "message-content";
+      messageContent.textContent = ` ${data.message}`;
+
+      const time = document.createElement("span");
+      time.className = "timestamp";
+      time.textContent = data.timestamp;
+
+      item.appendChild(nameEl);
+      item.appendChild(messageContent);
+      item.appendChild(time);
       messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight;
+      scrollToBottom();
     });
 
     socket.on("notification", (msg) => {
@@ -73,7 +154,7 @@
       item.className = "notification";
       item.textContent = msg;
       messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight;
+      scrollToBottom();
     });
 
     socket.on("typing", (username) => {
