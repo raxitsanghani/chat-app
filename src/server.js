@@ -6,16 +6,21 @@ const path = require("path");
 const mongoose = require("mongoose");
 const User = require("./models/User");
 const handleSocketConnections = require("./socketHandler");
-
+const router = require("./router");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
-
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
-
+app.use('/js', express.static(path.join(__dirname, 'public/js')));
+app.use('/css', express.static(path.join(__dirname, 'public/css')));
 
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/chatDB", {
   useNewUrlParser: true,
@@ -27,14 +32,8 @@ mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/chatDB", 
   process.exit(1);
 });
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/homepage.html"));
-});
-
-app.get("/chat", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/chat.html"));
-});
-
+// Use the router
+app.use('/', router);
 
 const onlineUsers = new Map();
 
@@ -45,7 +44,7 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something broke!");
 });
 
-
-server.listen(8080, () => {
-  console.log("Server is successfully listening on port 8080...");
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });

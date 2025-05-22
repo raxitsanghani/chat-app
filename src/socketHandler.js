@@ -17,6 +17,9 @@ module.exports = (io, onlineUsers, User) => {
         // Notify all users
         io.emit("notification", `${username} joined`);
         io.emit("userList", Array.from(onlineUsers.values()));
+        
+        // Send confirmation to the joining user
+        socket.emit("notification", "You have joined the chat");
       } catch (error) {
         console.error("Error in join event:", error);
         socket.emit("error", "Failed to join chat");
@@ -25,9 +28,16 @@ module.exports = (io, onlineUsers, User) => {
 
     socket.on("chat message", (msgData) => {
       try {
+        console.log('Received message:', msgData); // Debug log
+        if (!msgData.username || !msgData.message) {
+          throw new Error('Invalid message format');
+        }
+        
+        // Broadcast the message to all clients
         io.emit("chat message", {
-          ...msgData,
-          timestamp: new Date().toISOString()
+          username: msgData.username,
+          message: msgData.message,
+          timestamp: msgData.timestamp || new Date().toISOString()
         });
       } catch (error) {
         console.error("Error in chat message event:", error);

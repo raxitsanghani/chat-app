@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Room</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     <div class="chat-container">
@@ -14,7 +15,11 @@
         </div>
         
         <div class="chat-main">
-            <button id="exit-button" class="btn-exit">Exit Chat</button>
+            <div class="chat-header">
+                <h2>Chat Room</h2>
+                <button id="mode-switch-button" class="mode-switch-button">Switch Mode</button>
+                <button id="exit-button" class="btn-exit">Exit Chat</button>
+            </div>
             <div class="messages-container" id="messages"></div>
             
             <div class="message-input-container">
@@ -29,8 +34,6 @@
             </div>
         </div>
     </div>
-
-    <script src="/socket.io/socket.io.js"></script>
     <script src="js/chat.js"></script>
 </body>
 </html>
