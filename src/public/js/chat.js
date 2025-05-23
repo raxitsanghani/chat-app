@@ -202,8 +202,14 @@ socket.on('chat message', (msgData) => {
     reactionArea.appendChild(addReactionButton);
     reactionArea.appendChild(reactionsContainer); 
 
-    messageDiv.appendChild(messageContent);
-    messageDiv.appendChild(reactionArea);
+    // Append elements based on message sender
+    if (msgData.username === username) {
+        messageDiv.appendChild(reactionArea);
+        messageDiv.appendChild(messageContent);
+    } else {
+        messageDiv.appendChild(messageContent);
+        messageDiv.appendChild(reactionArea);
+    }
     
     // Add delete button for sent messages
     if (msgData.username === username) {
@@ -217,12 +223,88 @@ socket.on('chat message', (msgData) => {
             }
         };
         messageDiv.appendChild(deleteButton);
+        
+        // Add edit button for sent messages
+        const editButton = document.createElement('button');
+        editButton.className = 'edit-button';
+        editButton.innerHTML = '✏️'; // Pencil emoji
+        editButton.title = 'Edit message';
+        editButton.onclick = () => {
+            enableMessageEditing(messageDiv, msgData);
+        };
+        messageDiv.appendChild(editButton);
     }
     
     messagesContainer.appendChild(messageDiv);
     
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 });
+
+// Function to enable message editing
+function enableMessageEditing(messageDiv, msgData) {
+    const messageTextElement = messageDiv.querySelector('.message-text');
+    if (!messageTextElement) return; // Can only edit text messages
+
+    const originalText = messageTextElement.textContent;
+    const messageContentElement = messageDiv.querySelector('.message-content');
+
+    // Create input field
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'message-edit-input';
+    input.value = originalText;
+
+    // Create Save and Cancel buttons container
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'edit-buttons';
+
+    // Create Save button
+    const saveButton = document.createElement('button');
+    saveButton.className = 'save-edit-button';
+    saveButton.textContent = 'Save';
+    saveButton.onclick = () => {
+        const newText = input.value.trim();
+        if (newText && newText !== originalText) {
+            socket.emit('edit message', { messageId: msgData.id, newText: newText });
+        } else {
+            // If no change or empty, cancel editing
+            cancelMessageEditing(messageDiv, msgData, originalText);
+        }
+    };
+
+    // Create Cancel button
+    const cancelButton = document.createElement('button');
+    cancelButton.className = 'cancel-edit-button';
+    cancelButton.textContent = 'Cancel';
+    cancelButton.onclick = () => {
+        cancelMessageEditing(messageDiv, msgData, originalText);
+    };
+
+    buttonsContainer.appendChild(saveButton);
+    buttonsContainer.appendChild(cancelButton);
+
+    // Replace message text with input and add buttons
+    messageContentElement.replaceChild(input, messageTextElement);
+    messageDiv.appendChild(buttonsContainer);
+}
+
+// Function to cancel message editing
+function cancelMessageEditing(messageDiv, msgData, originalText) {
+    const input = messageDiv.querySelector('.message-edit-input');
+    const buttonsContainer = messageDiv.querySelector('.edit-buttons');
+    const messageContentElement = messageDiv.querySelector('.message-content');
+
+    // Recreate original message text element
+    const messageTextElement = document.createElement('div');
+    messageTextElement.className = 'message-text';
+    messageTextElement.textContent = originalText;
+
+    // Replace input with original text and remove buttons
+    messageContentElement.replaceChild(messageTextElement, input);
+    if (buttonsContainer) {
+        buttonsContainer.remove();
+    }
+}
 
 socket.on('reaction update', ({ messageId, reactions }) => {
     const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
@@ -316,6 +398,39 @@ socket.on('message deleted', ({ messageId }) => {
     const messageElement = messagesContainer.querySelector(`[data-message-id="${messageId}"]`);
     if (messageElement) {
         messageElement.remove();
+    }
+});
+
+// Handle message edited event from the server
+socket.on('message edited', ({ messageId, newText }) => {
+    console.log(`Message with ID ${messageId} edited.`);
+    const messageElement = messagesContainer.querySelector(`[data-message-id="${messageId}"]`);
+    if (messageElement) {
+        const messageTextElement = messageElement.querySelector('.message-text');
+        const inputElement = messageElement.querySelector('.message-edit-input');
+        const buttonsContainer = messageElement.querySelector('.edit-buttons');
+
+        if (messageTextElement) {
+            messageTextElement.textContent = newText;
+        } else if (inputElement) {
+             // If the original messageTextElement was replaced by the input
+             const newMessageTextElement = document.createElement('div');
+             newMessageTextElement.className = 'message-text';
+             newMessageTextElement.textContent = newText;
+             // Assuming the input is a direct child of messageContent
+             const messageContentElement = messageElement.querySelector('.message-content');
+             if(messageContentElement) {
+                 messageContentElement.replaceChild(newMessageTextElement, inputElement);
+             }
+        }
+
+        // Always remove editing interface elements if they exist
+        if (inputElement) {
+            inputElement.remove();
+        }
+        if (buttonsContainer) {
+            buttonsContainer.remove();
+        }
     }
 });
 

@@ -207,6 +207,14 @@ module.exports = (io, onlineUsers, User) => {
         io.emit('message deleted', { messageId });
     });
 
+    // Handle message editing
+    socket.on('edit message', ({ messageId, newText }) => {
+        console.log(`Attempting to edit message with ID: ${messageId}`);
+        // In a real application, you would verify user permissions and update in a database.
+        // For this example, we'll just broadcast the updated text.
+        io.emit('message edited', { messageId, newText });
+    });
+
     socket.on("typing", (username) => {
       socket.broadcast.emit("typing", username);
     });
