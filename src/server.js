@@ -22,7 +22,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use('/js', express.static(path.join(__dirname, 'public/js')));
 app.use('/css', express.static(path.join(__dirname, 'public/css')));
 
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/chatDB", {
+mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://raxitsanghani:raxit9595@cluster0.k1ba3t3.mongodb.net/", {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
@@ -46,5 +46,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log("Server is running on port 8080");
 });

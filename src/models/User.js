@@ -25,7 +25,6 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Add index for better query performance
 userSchema.index({ username: 1 });
 
 module.exports = mongoose.model("User", userSchema);
