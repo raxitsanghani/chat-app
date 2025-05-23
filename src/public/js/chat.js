@@ -205,6 +205,20 @@ socket.on('chat message', (msgData) => {
     messageDiv.appendChild(messageContent);
     messageDiv.appendChild(reactionArea);
     
+    // Add delete button for sent messages
+    if (msgData.username === username) {
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-button';
+        deleteButton.innerHTML = '🗑️'; // Trash can emoji
+        deleteButton.title = 'Delete message';
+        deleteButton.onclick = () => {
+            if (confirm('Are you sure you want to delete this message?')) {
+                socket.emit('delete message', { messageId: msgData.id });
+            }
+        };
+        messageDiv.appendChild(deleteButton);
+    }
+    
     messagesContainer.appendChild(messageDiv);
     
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -293,6 +307,15 @@ socket.on('error', (error) => {
         }, 3000);
     } else {
         alert(error);
+    }
+});
+
+// Handle message deletion event from the server
+socket.on('message deleted', ({ messageId }) => {
+    console.log(`Message with ID ${messageId} deleted.`);
+    const messageElement = messagesContainer.querySelector(`[data-message-id="${messageId}"]`);
+    if (messageElement) {
+        messageElement.remove();
     }
 });
 

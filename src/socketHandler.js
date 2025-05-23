@@ -172,11 +172,11 @@ module.exports = (io, onlineUsers, User) => {
           reactionUsersSet.add(currentUser);
         }
         
-        if (reactionUsersSet.size === 0) {
+        if (reactionsForMessage.size === 0) {
           reactionsForMessage.delete(reaction);
         }
         
-        if (reactionsForMessage.size === 0) {
+        if (messageReactions.size === 0) {
             messageReactions.delete(messageId);
         }
 
@@ -197,6 +197,14 @@ module.exports = (io, onlineUsers, User) => {
         console.error("Error in add reaction event:", error);
         socket.emit("error", "Failed to add reaction");
       }
+    });
+
+    // Handle message deletion
+    socket.on('delete message', ({ messageId }) => {
+        console.log(`Attempting to delete message with ID: ${messageId}`);
+        // In a real application, you would verify user permissions and delete from a database.
+        // For this example, we'll just notify clients to remove the message by its ID.
+        io.emit('message deleted', { messageId });
     });
 
     socket.on("typing", (username) => {
