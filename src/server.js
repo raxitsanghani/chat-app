@@ -32,7 +32,6 @@ mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://raxitsanghani:raxit95
   process.exit(1);
 });
 
-// Use the router
 app.use('/', router);
 
 const onlineUsers = new Map();

@@ -27,6 +27,14 @@
 }
 
 :root.dark-mode {
+    --primary-color: #53bdeb;
+    --secondary-color: #e9edef;
+    --background-color: #0b141a;
+    --text-color: #e9edef;
+    --error-color: #e74c3c;
+    --success-color: #2ecc71;
+    --border-radius: 8px;
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     --bg-color: #0b141a;
     --text-color: #e9edef;
     --sidebar-bg: #1f2c34;
@@ -55,10 +63,9 @@ body,
 .form-group input,
 .btn-join,
 .mode-switch-button {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Base styles and resets */
 * {
     margin: 0;
     padding: 0;
@@ -68,14 +75,19 @@ body,
 body {
     font-family: Arial, sans-serif;
     background-color: #f0f2f5;
-    color: #666;
+    color: #111b21;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Welcome screen styles */
+:root.dark-mode body {
+    background-color: #0b141a;
+    color: #e9edef;
+}
+
 .container {
     width: 100%;
     max-width: 400px;
@@ -89,10 +101,19 @@ body {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
+:root.dark-mode .welcome-card {
+    background: #1f2c34;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
 .welcome-card h1 {
     color: #1a73e8;
     margin-bottom: 20px;
     text-align: center;
+}
+
+:root.dark-mode .welcome-card h1 {
+    color: #53bdeb;
 }
 
 .welcome-card p {
@@ -101,7 +122,10 @@ body {
     color: #666;
 }
 
-/* Form styles */
+:root.dark-mode .welcome-card p {
+    color: #8696a0;
+}
+
 .join-form {
     margin-top: 20px;
 }
@@ -116,6 +140,10 @@ body {
     color: #666;
 }
 
+:root.dark-mode .form-group label {
+    color: #e9edef;
+}
+
 .form-group input {
     width: 100%;
     padding: 10px;
@@ -126,9 +154,19 @@ body {
     color: #666;
 }
 
+:root.dark-mode .form-group input {
+    background: #2a3942;
+    color: #e9edef;
+    border-color: #54656f;
+}
+
 .form-group input:focus {
     outline: none;
     border-color: #1a73e8;
+}
+
+:root.dark-mode .form-group input:focus {
+    border-color: #53bdeb;
 }
 
 .form-group input:invalid {
@@ -142,7 +180,10 @@ body {
     font-size: 12px;
 }
 
-/* Button styles */
+:root.dark-mode .form-text {
+    color: #8696a0;
+}
+
 .btn-join {
     width: 100%;
     padding: 12px;
@@ -154,35 +195,58 @@ body {
     cursor: pointer;
 }
 
+:root.dark-mode .btn-join {
+    background-color: #53bdeb;
+    color: #111b21;
+}
+
 .btn-join:hover {
-    background-color: #1557b0; /* Darker shade for hover */
+    background-color: #1557b0; 
     filter: none;
+}
+
+:root.dark-mode .btn-join:hover {
+    background-color: #3fa0d7;
 }
 
 .btn-join:active {
     transform: translateY(1px);
 }
 
-/* Chat container layout */
 .chat-container {
     width: 100%;
     height: 100vh;
     display: flex;
     background: #e5ddd5;
+    transition: background-color 0.3s ease;
 }
 
-/* Sidebar styles */
+:root.dark-mode .chat-container {
+    background: #0f1f2a;
+}
+
 .users-sidebar {
     width: 250px;
     background: #f8f9fa;
     padding: 20px;
     border-right: 1px solid #ddd;
     color: #111b21;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+:root.dark-mode .users-sidebar {
+    background: #1f2c34;
+    border-right: 1px solid #54656f;
+    color: #e9edef;
 }
 
 .users-sidebar h2 {
     color: #111b21;
     margin-bottom: 20px;
+}
+
+:root.dark-mode .users-sidebar h2 {
+    color: #e9edef;
 }
 
 #users-list {
@@ -194,7 +258,10 @@ body {
     border-bottom: 1px solid #ddd;
 }
 
-/* Main chat area */
+:root.dark-mode #users-list li {
+    border-bottom: 1px solid #54656f;
+}
+
 .chat-main {
     flex: 1;
     display: flex;
@@ -208,6 +275,12 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+:root.dark-mode .chat-header {
+    background: #1f2c34;
+    color: #e9edef;
 }
 
 .btn-exit {
@@ -219,8 +292,17 @@ body {
     cursor: pointer;
 }
 
+:root.dark-mode .btn-exit {
+    background: #53bdeb;
+    color: #111b21;
+}
+
 .btn-exit:hover {
     background: #1557b0;
+}
+
+:root.dark-mode .btn-exit:hover {
+    background: #3fa0d7;
 }
 
 .messages-container {
@@ -229,7 +311,6 @@ body {
     overflow-y: auto;
 }
 
-/* Message styles */
 .message {
     display: flex;
     flex-direction: column;
@@ -259,11 +340,22 @@ body {
     word-break: break-word;
     display: flex;
     flex-direction: column;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+:root.dark-mode .message-content {
+    background: #202c33;
+    color: #e9edef;
 }
 
 .message.sent .message-content {
     background: #d9fdd3;
     color: #111b21;
+}
+
+:root.dark-mode .message.sent .message-content {
+    background: #005c4b;
+    color: #e9edef;
 }
 
 .username {
@@ -282,7 +374,10 @@ body {
     margin-top: auto;
 }
 
-/* Message input area */
+:root.dark-mode .timestamp {
+    color: #8696a0 !important;
+}
+
 .message-input-container {
     padding: 20px;
     background: #f8f9fa;
@@ -290,6 +385,11 @@ body {
     display: flex;
     gap: 10px;
     align-items: center;
+}
+
+:root.dark-mode .message-input-container {
+    background: #1f2c34;
+    border-top: 1px solid #54656f;
 }
 
 .message-input {
@@ -300,9 +400,15 @@ body {
     font-size: 16px;
     background: #ffffff;
     color: #666;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Button styles */
+:root.dark-mode .message-input {
+    border: 1px solid #54656f;
+    background: #2a3942;
+    color: #e9edef;
+}
+
 .send-button,
 .upload-button,
 .emoji-button {
@@ -315,6 +421,13 @@ body {
     font-size: 16px;
 }
 
+:root.dark-mode .send-button,
+:root.dark-mode .upload-button,
+:root.dark-mode .emoji-button {
+    background: #53bdeb;
+    color: #111b21;
+}
+
 .send-button:hover,
 .upload-button:hover,
 .emoji-button:hover {
@@ -322,12 +435,21 @@ body {
     filter: none;
 }
 
-/* Notifications and indicators */
+:root.dark-mode .send-button:hover,
+:root.dark-mode .upload-button:hover,
+:root.dark-mode .emoji-button:hover {
+    background: #3fa0d7;
+}
+
 .notification {
     text-align: center;
     color: #667781;
     margin: 10px 0;
     font-style: italic;
+}
+
+:root.dark-mode .notification {
+    color: #8696a0;
 }
 
 .typing-indicator {
@@ -336,7 +458,10 @@ body {
     margin: 5px 0;
 }
 
-/* Reaction styles */
+:root.dark-mode .typing-indicator {
+    color: #8696a0;
+}
+
 .reaction-button {
     background: none;
     border: none;
@@ -361,6 +486,12 @@ body {
     gap: 5px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     z-index: 1002;
+}
+
+:root.dark-mode .reaction-picker {
+    background: #1f2c34;
+    border-color: #54656f;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .reaction-picker button {
@@ -397,8 +528,18 @@ body {
     color: #111b21;
 }
 
+:root.dark-mode .reaction {
+    background: #2a3942;
+    border-color: #54656f;
+    color: #e9edef;
+}
+
 .reaction:hover {
     background-color: rgba(0, 0, 0, 0.05);
+}
+
+:root.dark-mode .reaction:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .reaction.active {
@@ -407,7 +548,12 @@ body {
     color: white;
 }
 
-/* Emoji picker styles */
+:root.dark-mode .reaction.active {
+    background-color: #53bdeb;
+    border-color: #53bdeb;
+    color: #111b21;
+}
+
 .emoji-picker {
     position: fixed;
     background: #f0f2f5;
@@ -421,6 +567,12 @@ body {
     overflow-y: auto;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     z-index: 1001;
+}
+
+:root.dark-mode .emoji-picker {
+    background: #1f2c34;
+    border-color: #54656f;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .emoji-picker-button {
@@ -444,7 +596,10 @@ body {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
-/* Utility classes */
+:root.dark-mode .emoji-picker-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
 .notification.reaction-limit {
     background-color: #e74c3c;
     color: white;
@@ -462,11 +617,14 @@ body {
     font-weight: bold;
 }
 
+:root.dark-mode .file-link {
+    color: #53bdeb;
+}
+
 .file-link:hover {
     text-decoration: underline;
 }
 
-/* Animations */
 @keyframes fadeInOut {
     0% { opacity: 0; transform: translateY(-10px); }
     10% { opacity: 1; transform: translateY(0); }
@@ -481,8 +639,20 @@ body {
     font-size: 1rem;
     cursor: pointer;
     margin-left: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+}
+
+:root.dark-mode .mode-switch-button {
+    color: #e9edef;
 }
 
 .mode-switch-button:hover {
     opacity: 0.8;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+:root.dark-mode .mode-switch-button:hover {
+    background-color: rgba(0, 0, 0, 0.2);
 }

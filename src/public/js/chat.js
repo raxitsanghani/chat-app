@@ -106,11 +106,17 @@ function setTheme(theme) {
     if (theme === 'dark') {
         htmlElement.classList.add('dark-mode');
         localStorage.setItem('theme', 'dark');
-        if (modeSwitchButton) modeSwitchButton.textContent = 'Light Mode';
+        if (modeSwitchButton) {
+            modeSwitchButton.textContent = '☀️ Light Mode';
+            modeSwitchButton.title = 'Switch to Light Mode';
+        }
     } else {
         htmlElement.classList.remove('dark-mode');
         localStorage.setItem('theme', 'light');
-        if (modeSwitchButton) modeSwitchButton.textContent = 'Dark Mode';
+        if (modeSwitchButton) {
+            modeSwitchButton.textContent = '🌙 Dark Mode';
+            modeSwitchButton.title = 'Switch to Dark Mode';
+        }
     }
 }
 
