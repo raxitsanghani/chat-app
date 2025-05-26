@@ -30,6 +30,44 @@ const EMOJIS = [
     '🤪', '😝', '🤑', '🤭', '🤫', '🤐', '🤨', '😐', '😑', '😶'
 ]; 
 
+// Initialize dark/light mode
+function setTheme(theme) {
+    const htmlElement = document.documentElement;
+    if (theme === 'dark') {
+        htmlElement.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark');
+        if (modeSwitchButton) {
+            modeSwitchButton.textContent = '☀️ Light Mode';
+            modeSwitchButton.title = 'Switch to Light Mode';
+        }
+    } else {
+        htmlElement.classList.remove('dark-mode');
+        localStorage.setItem('theme', 'light');
+        if (modeSwitchButton) {
+            modeSwitchButton.textContent = '🌙 Dark Mode';
+            modeSwitchButton.title = 'Switch to Dark Mode';
+        }
+    }
+}
+
+// Set initial theme
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme) {
+    setTheme(savedTheme);
+} else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    setTheme('dark');
+} else {
+    setTheme('light');
+}
+
+// Add theme toggle event listener
+if (modeSwitchButton) {
+    modeSwitchButton.addEventListener('click', () => {
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        setTheme(currentTheme === 'light' ? 'dark' : 'light');
+    });
+}
+
 const emojiPicker = document.createElement('div');
 emojiPicker.className = 'emoji-picker';
 emojiPicker.style.display = 'none'; 
@@ -46,7 +84,6 @@ EMOJIS.forEach(emoji => {
         messageInput.value = text.substring(0, start) + emoji + text.substring(end);
         messageInput.focus();
         messageInput.selectionStart = messageInput.selectionEnd = start + emoji.length;
-      
     };
     emojiPicker.appendChild(button);
 });
@@ -55,19 +92,17 @@ document.body.appendChild(emojiPicker);
 emojiButton.addEventListener('click', (e) => {
     e.stopPropagation();
     const rect = emojiButton.getBoundingClientRect();
-    const messagesContainerRect = messagesContainer.getBoundingClientRect(); 
+    const inputContainer = document.querySelector('.message-input-container');
+    const inputRect = inputContainer.getBoundingClientRect();
 
-    emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'grid' : 'none'; 
+    emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'grid' : 'none';
     
-    if (emojiPicker.style.display === 'grid') { 
-        const inputContainer = document.querySelector('.message-input-container');
-        const inputRect = inputContainer.getBoundingClientRect();
-
-        emojiPicker.style.bottom = `${window.innerHeight - inputRect.top + 5}px`; 
-        const leftOffset = 10;
-        emojiPicker.style.left = `${inputRect.left + leftOffset}px`;
-
+    if (emojiPicker.style.display === 'grid') {
+        emojiPicker.style.position = 'fixed';
+        emojiPicker.style.bottom = `${window.innerHeight - inputRect.top + 5}px`;
+        emojiPicker.style.left = `${inputRect.left + 10}px`;
         emojiPicker.style.right = 'auto';
+        emojiPicker.style.zIndex = '1001';
     }
 });
 
@@ -81,6 +116,7 @@ const reactionPicker = document.createElement('div');
 reactionPicker.className = 'reaction-picker';
 reactionPicker.style.display = 'none';
 reactionPicker.style.zIndex = '1002'; 
+
 REACTIONS.forEach(emoji => {
     const button = document.createElement('button');
     button.textContent = emoji;
@@ -101,209 +137,198 @@ document.addEventListener('click', (e) => {
     }
 });
 
-function setTheme(theme) {
-    const htmlElement = document.documentElement;
-    if (theme === 'dark') {
-        htmlElement.classList.add('dark-mode');
-        localStorage.setItem('theme', 'dark');
-        if (modeSwitchButton) {
-            modeSwitchButton.textContent = '☀️ Light Mode';
-            modeSwitchButton.title = 'Switch to Light Mode';
-        }
-    } else {
-        htmlElement.classList.remove('dark-mode');
-        localStorage.setItem('theme', 'light');
-        if (modeSwitchButton) {
-            modeSwitchButton.textContent = '🌙 Dark Mode';
-            modeSwitchButton.title = 'Switch to Dark Mode';
-        }
-    }
-}
-
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme) {
-    setTheme(savedTheme);
-} else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    setTheme('dark');
-} else {
-    setTheme('light');
-}
-
-if (modeSwitchButton) {
-    modeSwitchButton.addEventListener('click', () => {
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        setTheme(currentTheme === 'light' ? 'dark' : 'light');
-    });
-}
-
 socket.on('connect', () => {
     console.log('Connected to server');
+    socket.emit('join', username);
 });
 
 socket.on('connect_error', (error) => {
     console.error('Connection error:', error);
 });
 
-socket.emit('join', username);
-
 socket.on('chat message', (msgData) => {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${msgData.username === username ? 'sent' : 'received'}`;
     messageDiv.dataset.messageId = msgData.id;
-    
+
     const messageContent = document.createElement('div');
     messageContent.className = 'message-content';
-    
-    const usernameDiv = document.createElement('div');
-    usernameDiv.className = 'username';
-    usernameDiv.textContent = msgData.username;
-    
-    let messageBody;
-    if (msgData.file) {
-        messageBody = document.createElement('a');
-        messageBody.href = msgData.file.url;
-        messageBody.textContent = `⬇️ ${msgData.file.name}`; 
-        messageBody.target = '_blank';
-        messageBody.className = 'file-link';
-    } else {
-        messageBody = document.createElement('div');
-        messageBody.className = 'message-text';
-        messageBody.textContent = msgData.message;
-    }
+    messageContent.style.position = 'relative';
 
-    const timestampDiv = document.createElement('div');
-    timestampDiv.className = 'timestamp';
-    timestampDiv.textContent = new Date(msgData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    messageContent.appendChild(usernameDiv);
-    messageContent.appendChild(messageBody); 
-    messageContent.appendChild(timestampDiv);
-
-    const reactionArea = document.createElement('div');
-    reactionArea.className = 'message-reaction-area';
-
-    const addReactionButton = document.createElement('button');
-    addReactionButton.className = 'reaction-button';
-    addReactionButton.innerHTML = '😀';
-    addReactionButton.onclick = (e) => {
-        e.stopPropagation();
-        const rect = addReactionButton.getBoundingClientRect();
-        reactionPicker.style.display = 'flex';
-        reactionPicker.style.top = `${rect.bottom + 5}px`; 
-        reactionPicker.style.left = `${rect.left}px`; 
-        reactionPicker.style.right = 'auto';
-
-        reactionPicker.dataset.messageId = msgData.id;
-    };
-    
-    const reactionsContainer = document.createElement('div');
-    reactionsContainer.className = 'reactions-container';
-
-    reactionArea.appendChild(addReactionButton);
-    reactionArea.appendChild(reactionsContainer); 
-
-    // Append elements based on message sender
+    // Top-right three-dots menu for own messages
     if (msgData.username === username) {
-        messageDiv.appendChild(reactionArea);
-        messageDiv.appendChild(messageContent);
-    } else {
-        messageDiv.appendChild(messageContent);
-        messageDiv.appendChild(reactionArea);
-    }
-    
-    // Add delete button for sent messages
-    if (msgData.username === username) {
-        const deleteButton = document.createElement('button');
-        deleteButton.className = 'delete-button';
-        deleteButton.innerHTML = '🗑️'; // Trash can emoji
-        deleteButton.title = 'Delete message';
-        deleteButton.onclick = () => {
+        const moreMenuWrapper = document.createElement('div');
+        moreMenuWrapper.className = 'message-more-menu-wrapper';
+        moreMenuWrapper.style.position = 'absolute';
+        moreMenuWrapper.style.top = '8px';
+        moreMenuWrapper.style.right = '12px';
+
+        const moreButton = document.createElement('button');
+        moreButton.className = 'message-more-btn';
+        moreButton.innerHTML = '&#8942;'; // vertical ellipsis
+        moreButton.title = 'More options';
+        moreButton.onclick = (e) => {
+            e.stopPropagation();
+            // Close any other open menus
+            document.querySelectorAll('.message-more-dropdown').forEach(el => el.style.display = 'none');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        };
+        moreMenuWrapper.appendChild(moreButton);
+
+        // Dropdown menu
+        const dropdown = document.createElement('div');
+        dropdown.className = 'message-more-dropdown';
+        dropdown.style.display = 'none';
+        dropdown.style.position = 'absolute';
+        dropdown.style.top = '28px';
+        dropdown.style.right = '0';
+        dropdown.style.zIndex = '10';
+
+        // Edit option
+        const editOption = document.createElement('div');
+        editOption.className = 'message-more-option';
+        editOption.innerHTML = '<span class="option-icon">✏️</span> Edit Message';
+        editOption.onclick = (e) => {
+            e.stopPropagation();
+            dropdown.style.display = 'none';
+            enableMessageEditing(messageDiv, msgData);
+        };
+        dropdown.appendChild(editOption);
+
+        // Delete option
+        const deleteOption = document.createElement('div');
+        deleteOption.className = 'message-more-option';
+        deleteOption.innerHTML = '<span class="option-icon">🗑️</span> Delete Message';
+        deleteOption.onclick = (e) => {
+            e.stopPropagation();
+            dropdown.style.display = 'none';
             if (confirm('Are you sure you want to delete this message?')) {
                 socket.emit('delete message', { messageId: msgData.id });
             }
         };
-        messageDiv.appendChild(deleteButton);
-        
-        // Add edit button for sent messages
-        const editButton = document.createElement('button');
-        editButton.className = 'edit-button';
-        editButton.innerHTML = '✏️'; // Pencil emoji
-        editButton.title = 'Edit message';
-        editButton.onclick = () => {
-            enableMessageEditing(messageDiv, msgData);
-        };
-        messageDiv.appendChild(editButton);
+        dropdown.appendChild(deleteOption);
+
+        moreMenuWrapper.appendChild(dropdown);
+        messageContent.appendChild(moreMenuWrapper);
+
+        // Close dropdown on outside click
+        document.addEventListener('click', (e) => {
+            if (!moreMenuWrapper.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
     }
-    
+
+    // Bottom-left actions (reaction only)
+    const actionsBottomLeft = document.createElement('div');
+    actionsBottomLeft.className = 'message-actions-bottom-left';
+    actionsBottomLeft.style.position = 'absolute';
+    actionsBottomLeft.style.bottom = '8px';
+    actionsBottomLeft.style.left = '12px';
+    actionsBottomLeft.style.display = 'flex';
+    actionsBottomLeft.style.gap = '8px';
+
+    // Reaction button
+    const reactionButton = document.createElement('button');
+    reactionButton.className = 'action-button reaction-button';
+    reactionButton.innerHTML = '😀';
+    reactionButton.title = 'Add reaction';
+    reactionButton.onclick = (e) => {
+        e.stopPropagation();
+        showReactionPicker(e, msgData.id);
+    };
+    actionsBottomLeft.appendChild(reactionButton);
+    messageContent.appendChild(actionsBottomLeft);
+
+    // Username, message, timestamp
+    const usernameDiv = document.createElement('div');
+    usernameDiv.className = 'username';
+    usernameDiv.textContent = msgData.username;
+
+    const messageText = document.createElement('div');
+    messageText.className = 'message-text';
+    messageText.textContent = msgData.message;
+
+    const timestampDiv = document.createElement('div');
+    timestampDiv.className = 'timestamp';
+    timestampDiv.textContent = new Date(msgData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // Reactions container
+    const reactionsDiv = document.createElement('div');
+    reactionsDiv.className = 'message-reactions';
+    if (msgData.reactions) {
+        Object.entries(msgData.reactions).forEach(([emoji, users]) => {
+            const reaction = document.createElement('span');
+            reaction.className = 'reaction';
+            reaction.textContent = `${emoji} ${users.length}`;
+            reaction.title = users.join(', ');
+            reactionsDiv.appendChild(reaction);
+        });
+    }
+
+    messageContent.appendChild(usernameDiv);
+    messageContent.appendChild(messageText);
+    messageContent.appendChild(timestampDiv);
+    messageContent.appendChild(reactionsDiv);
+
+    messageDiv.appendChild(messageContent);
     messagesContainer.appendChild(messageDiv);
-    
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 });
 
-// Function to enable message editing
+function showReactionPicker(event, messageId) {
+    const rect = event.target.getBoundingClientRect();
+    reactionPicker.style.display = 'flex';
+    reactionPicker.style.top = `${rect.top - 50}px`;
+    reactionPicker.style.left = `${rect.left}px`;
+    reactionPicker.dataset.messageId = messageId;
+}
+
 function enableMessageEditing(messageDiv, msgData) {
-    const messageTextElement = messageDiv.querySelector('.message-text');
-    if (!messageTextElement) return; // Can only edit text messages
+    const messageText = messageDiv.querySelector('.message-text');
+    const originalText = messageText.textContent;
 
-    const originalText = messageTextElement.textContent;
-    const messageContentElement = messageDiv.querySelector('.message-content');
-
-    // Create input field
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'message-edit-input';
     input.value = originalText;
 
-    // Create Save and Cancel buttons container
-    const buttonsContainer = document.createElement('div');
-    buttonsContainer.className = 'edit-buttons';
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'edit-actions';
 
-    // Create Save button
     const saveButton = document.createElement('button');
-    saveButton.className = 'save-edit-button';
+    saveButton.className = 'edit-button';
     saveButton.textContent = 'Save';
     saveButton.onclick = () => {
         const newText = input.value.trim();
         if (newText && newText !== originalText) {
-            socket.emit('edit message', { messageId: msgData.id, newText: newText });
-        } else {
-            // If no change or empty, cancel editing
-            cancelMessageEditing(messageDiv, msgData, originalText);
+            socket.emit('edit message', { messageId: msgData.id, newText });
         }
+        cancelMessageEditing(messageDiv, originalText);
     };
 
-    // Create Cancel button
     const cancelButton = document.createElement('button');
-    cancelButton.className = 'cancel-edit-button';
+    cancelButton.className = 'cancel-button';
     cancelButton.textContent = 'Cancel';
-    cancelButton.onclick = () => {
-        cancelMessageEditing(messageDiv, msgData, originalText);
-    };
+    cancelButton.onclick = () => cancelMessageEditing(messageDiv, originalText);
 
-    buttonsContainer.appendChild(saveButton);
-    buttonsContainer.appendChild(cancelButton);
+    actionsDiv.appendChild(saveButton);
+    actionsDiv.appendChild(cancelButton);
 
-    // Replace message text with input and add buttons
-    messageContentElement.replaceChild(input, messageTextElement);
-    messageDiv.appendChild(buttonsContainer);
+    messageText.replaceWith(input);
+    messageDiv.appendChild(actionsDiv);
+    input.focus();
 }
 
-// Function to cancel message editing
-function cancelMessageEditing(messageDiv, msgData, originalText) {
+function cancelMessageEditing(messageDiv, originalText) {
     const input = messageDiv.querySelector('.message-edit-input');
-    const buttonsContainer = messageDiv.querySelector('.edit-buttons');
-    const messageContentElement = messageDiv.querySelector('.message-content');
+    const actionsDiv = messageDiv.querySelector('.edit-actions');
+    const messageText = document.createElement('div');
+    messageText.className = 'message-text';
+    messageText.textContent = originalText;
 
-    // Recreate original message text element
-    const messageTextElement = document.createElement('div');
-    messageTextElement.className = 'message-text';
-    messageTextElement.textContent = originalText;
-
-    // Replace input with original text and remove buttons
-    messageContentElement.replaceChild(messageTextElement, input);
-    if (buttonsContainer) {
-        buttonsContainer.remove();
-    }
+    input.replaceWith(messageText);
+    actionsDiv.remove();
 }
 
 socket.on('reaction update', ({ messageId, reactions }) => {
@@ -371,6 +396,9 @@ socket.on('userList', (users) => {
     users.forEach(user => {
         const userItem = document.createElement('li');
         userItem.textContent = user;
+        if (user === username) {
+            userItem.classList.add('current-user');
+        }
         usersList.appendChild(userItem);
     });
 });
@@ -392,18 +420,14 @@ socket.on('error', (error) => {
     }
 });
 
-// Handle message deletion event from the server
 socket.on('message deleted', ({ messageId }) => {
-    console.log(`Message with ID ${messageId} deleted.`);
     const messageElement = messagesContainer.querySelector(`[data-message-id="${messageId}"]`);
     if (messageElement) {
         messageElement.remove();
     }
 });
 
-// Handle message edited event from the server
 socket.on('message edited', ({ messageId, newText }) => {
-    console.log(`Message with ID ${messageId} edited.`);
     const messageElement = messagesContainer.querySelector(`[data-message-id="${messageId}"]`);
     if (messageElement) {
         const messageTextElement = messageElement.querySelector('.message-text');
@@ -413,18 +437,15 @@ socket.on('message edited', ({ messageId, newText }) => {
         if (messageTextElement) {
             messageTextElement.textContent = newText;
         } else if (inputElement) {
-             // If the original messageTextElement was replaced by the input
-             const newMessageTextElement = document.createElement('div');
-             newMessageTextElement.className = 'message-text';
-             newMessageTextElement.textContent = newText;
-             // Assuming the input is a direct child of messageContent
-             const messageContentElement = messageElement.querySelector('.message-content');
-             if(messageContentElement) {
-                 messageContentElement.replaceChild(newMessageTextElement, inputElement);
-             }
+            const newMessageTextElement = document.createElement('div');
+            newMessageTextElement.className = 'message-text';
+            newMessageTextElement.textContent = newText;
+            const messageContentElement = messageElement.querySelector('.message-content');
+            if(messageContentElement) {
+                messageContentElement.replaceChild(newMessageTextElement, inputElement);
+            }
         }
 
-        // Always remove editing interface elements if they exist
         if (inputElement) {
             inputElement.remove();
         }
@@ -437,7 +458,6 @@ socket.on('message edited', ({ messageId, newText }) => {
 function sendMessage() {
     const message = messageInput.value.trim();
     if (message) {
-        console.log('Sending message:', message);
         socket.emit('chat message', {
             username,
             message,
@@ -489,7 +509,12 @@ fileInput.addEventListener('change', (e) => {
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
     let uploadedChunks = 0;
 
-    socket.emit('start file upload', { name: file.name, type: file.type, size: file.size, fileId: fileId });
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = `Uploading ${file.name}...`;
+    messagesContainer.appendChild(notification);
+
+    socket.emit('start file upload', { name: file.name, type: file.type, size: file.size, fileId });
 
     const fileReader = new FileReader();
 
@@ -498,19 +523,25 @@ fileInput.addEventListener('change', (e) => {
         socket.emit('upload file chunk', { fileId: fileId, chunk: chunk, chunkIndex: uploadedChunks });
         uploadedChunks++;
 
+        const progress = Math.round((uploadedChunks / totalChunks) * 100);
+        notification.textContent = `Uploading ${file.name}... ${progress}%`;
+
         if (uploadedChunks < totalChunks) {
             loadNextChunk();
         } else {
             socket.emit('end file upload', { fileId: fileId });
-        
+            notification.textContent = `Upload complete: ${file.name}`;
+            setTimeout(() => notification.remove(), 3000);
             fileInput.value = ''; 
         }
     };
 
     fileReader.onerror = function(error) {
         console.error('File reading error:', error);
-        socket.emit('error', 'Failed to read file.');
-
+        notification.textContent = `Error uploading ${file.name}`;
+        notification.className = 'notification error';
+        setTimeout(() => notification.remove(), 3000);
+        socket.emit('error', 'Failed to read file');
         fileInput.value = '';
     };
 
