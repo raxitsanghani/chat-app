@@ -8,7 +8,7 @@ module.exports = (io, onlineUsers, User) => {
   const uploadDir = path.join(__dirname, 'public', 'uploads');
 
   if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+    fs.mkdirSync(uploadDir, { recursive: true, mode: 0o755 });
   }
 
   io.on("connection", (socket) => {
@@ -37,10 +37,11 @@ module.exports = (io, onlineUsers, User) => {
 
     socket.on("chat message", (msgData) => {
       try {
-        console.log('Received message:', msgData); 
-        
-        const messageId = msgData.id || Date.now().toString(); 
-        
+        if (!msgData.username || (!msgData.message && !msgData.file)) {
+          throw new Error('Invalid message format');
+        }
+
+        const messageId = msgData.id || Date.now().toString();
         const messageToSend = {
           id: messageId,
           username: msgData.username,
@@ -49,33 +50,24 @@ module.exports = (io, onlineUsers, User) => {
         };
 
         if (msgData.message) {
-            if (!msgData.username || !msgData.message) {
-              throw new Error('Invalid message format');
-            }
-            messageToSend.message = msgData.message;
+          messageToSend.message = msgData.message;
         } else if (msgData.file) {
-            if (!msgData.username || !msgData.file || !msgData.file.name || !msgData.file.url) {
-                 throw new Error('Invalid file message format');
-            }
-            messageToSend.file = msgData.file;
-        } else {
-            if (!msgData.reactions) {
-                 throw new Error('Invalid message type or missing data');
-            }
-             console.log('Received what looks like a reaction update as chat message, ignoring.');
-             return; 
+          if (!msgData.file.name || !msgData.file.url) {
+            throw new Error('Invalid file message format');
+          }
+          messageToSend.file = msgData.file;
         }
 
         if (!messageReactions.has(messageId)) {
-             const initialReactions = new Map();
-             if(messageToSend.reactions && Array.isArray(messageToSend.reactions)){
-                 messageToSend.reactions.forEach(r => {
-                     if(r.emoji && Array.isArray(r.users)){
-                         initialReactions.set(r.emoji, new Set(r.users));
-                     }
-                 });
-             }
-             messageReactions.set(messageId, initialReactions);
+          const initialReactions = new Map();
+          if (messageToSend.reactions && Array.isArray(messageToSend.reactions)) {
+            messageToSend.reactions.forEach(r => {
+              if (r.emoji && Array.isArray(r.users)) {
+                initialReactions.set(r.emoji, new Set(r.users));
+              }
+            });
+          }
+          messageReactions.set(messageId, initialReactions);
         }
 
         io.emit("chat message", messageToSend);
@@ -87,72 +79,106 @@ module.exports = (io, onlineUsers, User) => {
     });
 
     socket.on('start file upload', ({ name, type, size, fileId }) => {
-        console.log(`Starting file upload: ${name} (${size} bytes) with ID ${fileId}`);
-        uploadedFiles.set(fileId, { name, type, size, data: [], uploadedSize: 0 });
+      try {
+        console.log(`[UPLOAD] Start: ${name} (${size} bytes) ID: ${fileId}`);
+        if (size > 900 * 1024 * 1024) {
+          throw new Error('File size exceeds 900MB limit');
+        }
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
+        if (!allowedTypes.includes(type)) {
+          throw new Error('File type not allowed');
+        }
+        uploadedFiles.set(fileId, {
+          name,
+          type,
+          size,
+          data: [],
+          uploadedSize: 0,
+          chunks: Math.ceil(size / (1024 * 50))
+        });
+        socket.emit('upload started', { fileId });
+      } catch (error) {
+        console.error("[UPLOAD] Error in start:", error);
+        socket.emit('error', error.message || 'Failed to start file upload');
+      }
     });
 
     socket.on('upload file chunk', ({ fileId, chunk, chunkIndex }) => {
+      try {
         const fileInfo = uploadedFiles.get(fileId);
         if (!fileInfo) {
-            console.error(`Received chunk for unknown file ID: ${fileId}`);
-            socket.emit('error', 'Unknown file upload ID.');
-            return;
+          throw new Error('Unknown file upload ID');
         }
-
-        console.log(`Received chunk ${chunkIndex} for file ID ${fileId}`);
+        if (chunkIndex >= fileInfo.chunks) {
+          throw new Error('Invalid chunk index');
+        }
         fileInfo.data[chunkIndex] = Buffer.from(chunk);
         fileInfo.uploadedSize += chunk.byteLength;
+        console.log(`[UPLOAD] Chunk ${chunkIndex} received for ${fileId} (${fileInfo.uploadedSize}/${fileInfo.size})`);
+        const progress = Math.round((fileInfo.uploadedSize / fileInfo.size) * 100);
+        socket.emit('upload progress', { fileId, progress });
+      } catch (error) {
+        console.error("[UPLOAD] Error in chunk:", error);
+        socket.emit('error', error.message || 'Failed to upload file chunk');
+      }
     });
 
     socket.on('end file upload', async ({ fileId }) => {
+      try {
         const fileInfo = uploadedFiles.get(fileId);
         if (!fileInfo) {
-            console.error(`Received end for unknown file ID: ${fileId}`);
-            socket.emit('error', 'Unknown file upload ID.');
-            return;
+          console.error(`[UPLOAD] No fileInfo for fileId: ${fileId}`);
+          throw new Error('Unknown file upload ID');
         }
-
         if (fileInfo.uploadedSize !== fileInfo.size) {
-             console.error(`File size mismatch for ID ${fileId}. Expected ${fileInfo.size}, got ${fileInfo.uploadedSize}`);
-             socket.emit('error', 'File upload incomplete.');
-             uploadedFiles.delete(fileId); 
-             return;
+          console.error(`[UPLOAD] Uploaded size mismatch for fileId: ${fileId}. Uploaded: ${fileInfo.uploadedSize}, Expected: ${fileInfo.size}`);
+          throw new Error('File upload incomplete');
         }
-
-        const fileName = `${fileId}_${fileInfo.name}`;
+        if (fileInfo.data.length !== fileInfo.chunks || fileInfo.data.includes(undefined)) {
+          console.error(`[UPLOAD] Missing chunks for fileId: ${fileId}`);
+          throw new Error('Some file chunks are missing');
+        }
+        const timestamp = Date.now();
+        const safeName = fileInfo.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const fileName = `${timestamp}-${safeName}`;
         const filePath = path.join(uploadDir, fileName);
-        const fileUrl = `/uploads/${encodeURIComponent(fileName)}`; 
-
+        const fileUrl = `/uploads/${encodeURIComponent(fileName)}`;
+        const fileBuffer = Buffer.concat(fileInfo.data);
         try {
-            const fileBuffer = Buffer.concat(fileInfo.data);
-            await fs.promises.writeFile(filePath, fileBuffer);
-            console.log(`File ${fileInfo.name} saved to ${filePath}`);
-
-            io.emit('chat message', {
-              username: currentUser,
-              file: {
-                  name: fileInfo.name,
-                  url: fileUrl,
-                  size: fileInfo.size,
-                  type: fileInfo.type
-              },
-              timestamp: new Date().toISOString(),
-              id: fileId 
-            });
-
-            uploadedFiles.delete(fileId); 
-
-        } catch (error) {
-            console.error('Error saving file:', error);
-            socket.emit('error', 'Failed to save file.');
-            uploadedFiles.delete(fileId);
+          await fs.promises.writeFile(filePath, fileBuffer);
+          console.log(`[UPLOAD] File saved: ${filePath}`);
+        } catch (err) {
+          console.error(`[UPLOAD] Error saving file: ${filePath}`, err);
+          socket.emit('error', 'Failed to save uploaded file.');
+          uploadedFiles.delete(fileId);
+          return;
         }
+        if (!currentUser) {
+          console.error(`[UPLOAD] currentUser is not set for fileId: ${fileId}`);
+        }
+        io.emit('chat message', {
+          id: fileId,
+          username: currentUser || 'Unknown',
+          file: {
+            name: fileInfo.name,
+            url: fileUrl,
+            size: fileInfo.size,
+            type: fileInfo.type
+          },
+          timestamp: new Date().toISOString()
+        });
+        uploadedFiles.delete(fileId);
+        socket.emit('upload complete', { fileId });
+      } catch (error) {
+        console.error("[UPLOAD] Error in end:", error);
+        socket.emit('error', error.message || 'Failed to complete file upload');
+        uploadedFiles.delete(fileId);
+      }
     });
 
     socket.on("add reaction", ({ messageId, reaction }) => {
       try {
         if (!messageReactions.has(messageId)) {
-          console.warn(`Attempted to react to unknown message ID: ${messageId}. Initializing reactions map.`);
           messageReactions.set(messageId, new Map());
         }
         
@@ -164,55 +190,50 @@ module.exports = (io, onlineUsers, User) => {
         
         const reactionUsersSet = reactionsForMessage.get(reaction);
         
-        const userAlreadyReactedWithThisEmoji = reactionUsersSet.has(currentUser);
-        
-        if (userAlreadyReactedWithThisEmoji) {
+        if (reactionUsersSet.has(currentUser)) {
           reactionUsersSet.delete(currentUser);
+          if (reactionUsersSet.size === 0) {
+            reactionsForMessage.delete(reaction);
+          }
         } else {
           reactionUsersSet.add(currentUser);
         }
         
         if (reactionsForMessage.size === 0) {
-          reactionsForMessage.delete(reaction);
-        }
-        
-        if (messageReactions.size === 0) {
-            messageReactions.delete(messageId);
+          messageReactions.delete(messageId);
         }
 
-   
-        if(messageReactions.has(messageId)) {
-            io.emit("reaction update", {
-              messageId,
-              reactions: Array.from(messageReactions.get(messageId).entries()).map(([emoji, users]) => ({
-                emoji,
-                users: Array.from(users)
-              }))
-            });
-        } else {
-             io.emit("reaction update", { messageId, reactions: [] });
-        }
-
+        io.emit("reaction update", {
+          messageId,
+          reactions: Array.from(reactionsForMessage.entries()).map(([emoji, users]) => ({
+            emoji,
+            users: Array.from(users)
+          }))
+        });
       } catch (error) {
         console.error("Error in add reaction event:", error);
         socket.emit("error", "Failed to add reaction");
       }
     });
 
-    // Handle message deletion
     socket.on('delete message', ({ messageId }) => {
-        console.log(`Attempting to delete message with ID: ${messageId}`);
-        // In a real application, you would verify user permissions and delete from a database.
-        // For this example, we'll just notify clients to remove the message by its ID.
+      try {
+        console.log(`Deleting message with ID: ${messageId}`);
         io.emit('message deleted', { messageId });
+      } catch (error) {
+        console.error("Error in delete message:", error);
+        socket.emit('error', 'Failed to delete message');
+      }
     });
 
-    // Handle message editing
     socket.on('edit message', ({ messageId, newText }) => {
-        console.log(`Attempting to edit message with ID: ${messageId}`);
-        // In a real application, you would verify user permissions and update in a database.
-        // For this example, we'll just broadcast the updated text.
+      try {
+        console.log(`Editing message with ID: ${messageId}`);
         io.emit('message edited', { messageId, newText });
+      } catch (error) {
+        console.error("Error in edit message:", error);
+        socket.emit('error', 'Failed to edit message');
+      }
     });
 
     socket.on("typing", (username) => {

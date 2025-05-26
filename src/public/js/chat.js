@@ -20,17 +20,19 @@ const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '👏'];
 
 const fileInput = document.getElementById('file-input');
 const uploadButton = document.getElementById('upload-button');
-const CHUNK_SIZE = 1024 * 50; 
+const CHUNK_SIZE = 50 * 1024;
 
 const emojiButton = document.getElementById('emoji-button');
 
 const EMOJIS = [
     '😀', '😂', '😍', '👍', '😢', '😡', '🥳', '🤩', '🤔', '🙌', 
     '😊', '😇', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😜', 
-    '🤪', '😝', '🤑', '🤭', '🤫', '🤐', '🤨', '😐', '😑', '😶'
+    '🤪', '😝', '🤑', '🤭', '🤫', '🤐', '🤨', '😐', '😑', '😶',
+    '👍', '👎', '👏', '🙌', '👐', '🤝', '🙏', '✋', '🤚', '🖐️', 
+    '🖖', '👌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👊', '🤛', '🤜',
+    '👋'
 ]; 
 
-// Initialize dark/light mode
 function setTheme(theme) {
     const htmlElement = document.documentElement;
     if (theme === 'dark') {
@@ -50,7 +52,6 @@ function setTheme(theme) {
     }
 }
 
-// Set initial theme
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme) {
     setTheme(savedTheme);
@@ -60,7 +61,6 @@ if (savedTheme) {
     setTheme('light');
 }
 
-// Add theme toggle event listener
 if (modeSwitchButton) {
     modeSwitchButton.addEventListener('click', () => {
         const currentTheme = localStorage.getItem('theme') || 'light';
@@ -155,7 +155,6 @@ socket.on('chat message', (msgData) => {
     messageContent.className = 'message-content';
     messageContent.style.position = 'relative';
 
-    // Top-right three-dots menu for own messages
     if (msgData.username === username) {
         const moreMenuWrapper = document.createElement('div');
         moreMenuWrapper.className = 'message-more-menu-wrapper';
@@ -165,17 +164,15 @@ socket.on('chat message', (msgData) => {
 
         const moreButton = document.createElement('button');
         moreButton.className = 'message-more-btn';
-        moreButton.innerHTML = '&#8942;'; // vertical ellipsis
+        moreButton.innerHTML = '&#8942;';
         moreButton.title = 'More options';
         moreButton.onclick = (e) => {
             e.stopPropagation();
-            // Close any other open menus
             document.querySelectorAll('.message-more-dropdown').forEach(el => el.style.display = 'none');
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         };
         moreMenuWrapper.appendChild(moreButton);
 
-        // Dropdown menu
         const dropdown = document.createElement('div');
         dropdown.className = 'message-more-dropdown';
         dropdown.style.display = 'none';
@@ -184,7 +181,6 @@ socket.on('chat message', (msgData) => {
         dropdown.style.right = '0';
         dropdown.style.zIndex = '10';
 
-        // Edit option
         const editOption = document.createElement('div');
         editOption.className = 'message-more-option';
         editOption.innerHTML = '<span class="option-icon">✏️</span> Edit Message';
@@ -195,7 +191,6 @@ socket.on('chat message', (msgData) => {
         };
         dropdown.appendChild(editOption);
 
-        // Delete option
         const deleteOption = document.createElement('div');
         deleteOption.className = 'message-more-option';
         deleteOption.innerHTML = '<span class="option-icon">🗑️</span> Delete Message';
@@ -211,7 +206,6 @@ socket.on('chat message', (msgData) => {
         moreMenuWrapper.appendChild(dropdown);
         messageContent.appendChild(moreMenuWrapper);
 
-        // Close dropdown on outside click
         document.addEventListener('click', (e) => {
             if (!moreMenuWrapper.contains(e.target)) {
                 dropdown.style.display = 'none';
@@ -219,7 +213,6 @@ socket.on('chat message', (msgData) => {
         });
     }
 
-    // Bottom-left actions (reaction only)
     const actionsBottomLeft = document.createElement('div');
     actionsBottomLeft.className = 'message-actions-bottom-left';
     actionsBottomLeft.style.position = 'absolute';
@@ -228,7 +221,6 @@ socket.on('chat message', (msgData) => {
     actionsBottomLeft.style.display = 'flex';
     actionsBottomLeft.style.gap = '8px';
 
-    // Reaction button
     const reactionButton = document.createElement('button');
     reactionButton.className = 'action-button reaction-button';
     reactionButton.innerHTML = '😀';
@@ -240,20 +232,38 @@ socket.on('chat message', (msgData) => {
     actionsBottomLeft.appendChild(reactionButton);
     messageContent.appendChild(actionsBottomLeft);
 
-    // Username, message, timestamp
     const usernameDiv = document.createElement('div');
     usernameDiv.className = 'username';
     usernameDiv.textContent = msgData.username;
 
-    const messageText = document.createElement('div');
-    messageText.className = 'message-text';
-    messageText.textContent = msgData.message;
+    let messageText;
+    if (msgData.file) {
+        messageText = document.createElement('div');
+        messageText.className = 'message-text';
+        if (msgData.file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = msgData.file.url;
+            img.alt = msgData.file.name;
+            img.style.maxWidth = '200px';
+            img.style.maxHeight = '200px';
+            messageText.appendChild(img);
+        } else {
+            const link = document.createElement('a');
+            link.href = msgData.file.url;
+            link.textContent = `Download: ${msgData.file.name}`;
+            link.target = '_blank';
+            messageText.appendChild(link);
+        }
+    } else {
+        messageText = document.createElement('div');
+        messageText.className = 'message-text';
+        messageText.textContent = msgData.message;
+    }
 
     const timestampDiv = document.createElement('div');
     timestampDiv.className = 'timestamp';
     timestampDiv.textContent = new Date(msgData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Reactions container
     const reactionsDiv = document.createElement('div');
     reactionsDiv.className = 'message-reactions';
     if (msgData.reactions) {
@@ -499,57 +509,101 @@ uploadButton.addEventListener('click', () => {
     fileInput.click(); 
 });
 
-fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) {
-        return; 
+function handleFileUpload(file) {
+    if (file.size > 600 * 1024 * 1024) {
+        const notification = document.createElement('div');
+        notification.className = 'notification error';
+        notification.textContent = 'File size must be less than 600MB';
+        messagesContainer.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+        fileInput.value = '';
+        return;
     }
 
-    const fileId = `${Date.now()}-${file.name}`;
-    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-    let uploadedChunks = 0;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
+    if (!allowedTypes.includes(file.type)) {
+        const notification = document.createElement('div');
+        notification.className = 'notification error';
+        notification.textContent = 'File type not allowed. Supported types: Images, PDF, Text';
+        messagesContainer.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+        fileInput.value = '';
+        return;
+    }
+
+    const fileId = Date.now().toString();
+    const reader = new FileReader();
+    let offset = 0;
 
     const notification = document.createElement('div');
     notification.className = 'notification';
     notification.textContent = `Uploading ${file.name}...`;
     messagesContainer.appendChild(notification);
 
-    socket.emit('start file upload', { name: file.name, type: file.type, size: file.size, fileId });
+    socket.emit('start file upload', {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        fileId
+    });
 
-    const fileReader = new FileReader();
+    function readNextChunk() {
+        const slice = file.slice(offset, offset + CHUNK_SIZE);
+        reader.readAsArrayBuffer(slice);
+    }
 
-    fileReader.onload = function(event) {
-        const chunk = event.target.result;
-        socket.emit('upload file chunk', { fileId: fileId, chunk: chunk, chunkIndex: uploadedChunks });
-        uploadedChunks++;
+    reader.onload = function(e) {
+        const chunk = e.target.result;
+        const chunkIndex = Math.floor(offset / CHUNK_SIZE);
 
-        const progress = Math.round((uploadedChunks / totalChunks) * 100);
-        notification.textContent = `Uploading ${file.name}... ${progress}%`;
+        socket.emit('upload file chunk', {
+            fileId,
+            chunk,
+            chunkIndex
+        });
 
-        if (uploadedChunks < totalChunks) {
-            loadNextChunk();
+        offset += chunk.byteLength;
+
+        if (offset < file.size) {
+            readNextChunk();
         } else {
-            socket.emit('end file upload', { fileId: fileId });
-            notification.textContent = `Upload complete: ${file.name}`;
-            setTimeout(() => notification.remove(), 3000);
-            fileInput.value = ''; 
+            socket.emit('end file upload', { fileId });
         }
     };
 
-    fileReader.onerror = function(error) {
-        console.error('File reading error:', error);
+    reader.onerror = function() {
+        console.error('Error reading file');
         notification.textContent = `Error uploading ${file.name}`;
         notification.className = 'notification error';
         setTimeout(() => notification.remove(), 3000);
         socket.emit('error', 'Failed to read file');
         fileInput.value = '';
     };
+}
 
-    function loadNextChunk() {
-        const start = uploadedChunks * CHUNK_SIZE;
-        const end = Math.min(start + CHUNK_SIZE, file.size);
-        fileReader.readAsArrayBuffer(file.slice(start, end));
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        handleFileUpload(file);
     }
+});
 
-    loadNextChunk(); 
+socket.on('upload progress', ({ fileId, progress }) => {
+    const notification = document.querySelector('.notification');
+    if (notification) {
+        notification.textContent = `Uploading... ${progress}%`;
+    }
+});
+
+socket.on('upload started', ({ fileId }) => {
+    console.log(`Upload started for ${fileId}`);
+});
+
+socket.on('upload complete', ({ fileId }) => {
+    const notification = document.querySelector('.notification');
+    if (notification) {
+        notification.textContent = 'Upload complete!';
+        setTimeout(() => notification.remove(), 3000);
+    }
+    fileInput.value = ''; 
 }); 

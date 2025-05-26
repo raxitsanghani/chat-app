@@ -10,17 +10,23 @@ const router = require("./router");
 
 const app = express();
 const server = http.createServer(app);
+
 const io = new Server(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"]
-  }
+  },
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use('/js', express.static(path.join(__dirname, 'public/js')));
 app.use('/css', express.static(path.join(__dirname, 'public/css')));
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://raxitsanghani:raxit9595@cluster0.k1ba3t3.mongodb.net/", {
   useNewUrlParser: true,
@@ -45,5 +51,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
-  console.log("Server is running on port 8080");
+  console.log(`Server is running on port ${PORT}`);
 });
