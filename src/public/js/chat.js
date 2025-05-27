@@ -159,7 +159,12 @@ socket.on('connect_error', (error) => {
 
 socket.on('chat message', (msgData) => {
     const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${msgData.username === username ? 'sent' : 'received'}`;
+    messageDiv.classList.add('message');
+    if (msgData.username === username) {
+        messageDiv.classList.add('sent');
+    } else {
+        messageDiv.classList.add('received');
+    }
     messageDiv.dataset.messageId = msgData.id;
 
     const messageContent = document.createElement('div');
@@ -243,9 +248,11 @@ socket.on('chat message', (msgData) => {
 
     let messageText;
     if (msgData.file) {
+        console.log('Received message with file:', msgData.file);
         messageText = document.createElement('div');
         messageText.className = 'message-text';
         if (msgData.file.type.startsWith('image/')) {
+            console.log('Displaying image:', msgData.file.url);
             const img = document.createElement('img');
             img.src = msgData.file.url;
             img.alt = msgData.file.name;
@@ -253,10 +260,12 @@ socket.on('chat message', (msgData) => {
             img.style.maxHeight = '200px';
             messageText.appendChild(img);
         } else {
+            console.log('Displaying download link for file:', msgData.file.name, msgData.file.url);
             const link = document.createElement('a');
             link.href = msgData.file.url;
             link.textContent = `Download: ${msgData.file.name}`;
             link.target = '_blank';
+            link.className = 'file-link';
             messageText.appendChild(link);
         }
     } else {
@@ -538,21 +547,44 @@ uploadButton.addEventListener('click', () => {
 });
 
 function handleFileUpload(file) {
-    if (file.size > 600 * 1024 * 1024) {
+    if (file.size > 500 * 1024 * 1024) { // 500MB limit
         const notification = document.createElement('div');
         notification.className = 'notification error';
-        notification.textContent = 'File size must be less than 600MB';
+        notification.textContent = 'File size must be less than 500MB';
         messagesContainer.appendChild(notification);
         setTimeout(() => notification.remove(), 3000);
         fileInput.value = '';
         return;
     }
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
-    if (!allowedTypes.includes(file.type)) {
+    // Added support for more image types, zip, and other common file types
+    const allowedTypes = [
+        'image/*', // All image types
+        'application/pdf',
+        'text/plain',
+        'application/zip',
+        'application/x-zip-compressed',
+        // Add other common types as needed, e.g., for documents, spreadsheets, etc.
+        // 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+        // 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+        // 'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+        // 'application/vnd.ms-excel', // .xls
+        // 'application/msword', // .doc
+        // 'application/vnd.ms-powerpoint', // .ppt
+    ];
+    
+    const isFileTypeAllowed = allowedTypes.some(type => {
+        if (type.endsWith('/*')) {
+            return file.type.startsWith(type.slice(0, -1));
+        } else {
+            return file.type === type;
+        }
+    });
+
+    if (!isFileTypeAllowed) {
         const notification = document.createElement('div');
         notification.className = 'notification error';
-        notification.textContent = 'File type not allowed. Supported types: Images, PDF, Text';
+        notification.textContent = 'File type not allowed. Supported types: Images, PDF, Text, ZIP, etc.';
         messagesContainer.appendChild(notification);
         setTimeout(() => notification.remove(), 3000);
         fileInput.value = '';

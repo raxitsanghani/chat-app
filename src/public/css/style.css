@@ -191,7 +191,7 @@ body {
     background-color: #1a73e8;
     color: white;
     border: none;
-    color: #555;
+    color: #060606;
     font-size: 16px;
     cursor: pointer;
 }
@@ -335,15 +335,16 @@ body {
 .btn-exit {
     padding: 8px 16px;
     background: #1a73e8;
-    color: white;
+    color: black;
     border: none;
-    color: #555;
+    color: #090909;
     cursor: pointer;
+    font-weight: bold;
 }
 
 :root.dark-mode .btn-exit {
     background: #53bdeb;
-    color: #111b21;
+    color: black;
 }
 
 .btn-exit:hover {
@@ -1255,5 +1256,4 @@ body {
     padding: 10px;
     border: 1px solid #555;
     color: #555;
-    background-color: #555;
 }

@@ -117,11 +117,28 @@ module.exports = (io, onlineUsers, User) => {
     socket.on('start file upload', ({ name, type, size, fileId }) => {
       try {
         console.log(`[UPLOAD] Start: ${name} (${size} bytes) ID: ${fileId}`);
-        if (size > 900 * 1024 * 1024) {
-          throw new Error('File size exceeds 900MB limit');
+        if (size > 500 * 1024 * 1024) { // 500MB limit
+          throw new Error('File size exceeds 500MB limit');
         }
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
-        if (!allowedTypes.includes(type)) {
+        // Added support for more image types, zip, and other common file types
+        const allowedTypes = [
+            'image/*', // All image types
+            'application/pdf',
+            'text/plain',
+            'application/zip',
+            'application/x-zip-compressed',
+            // Add other common types as needed
+        ];
+        
+        const isFileTypeAllowed = allowedTypes.some(allowedType => {
+            if (allowedType.endsWith('/*')) {
+                return type.startsWith(allowedType.slice(0, -1));
+            } else {
+                return type === allowedType;
+            }
+        });
+
+        if (!isFileTypeAllowed) {
           throw new Error('File type not allowed');
         }
         uploadedFiles.set(fileId, {
