@@ -32,7 +32,9 @@ const EMOJIS = [
     '🤪', '😝', '🤑', '🤭', '🤫', '🤐', '🤨', '😐', '😑', '😶',
     '👍', '👎', '👏', '🙌', '👐', '🤝', '🙏', '✋', '🤚', '🖐️', 
     '🖖', '👌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👊', '🤛', '🤜',
-    '👋'
+    '👋', '❤️', '💖', '💕', '💘', '💝', '💓', '💗', '💞', '💟', 
+    '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎'
+
 ]; 
 
 function setTheme(theme) {
@@ -230,16 +232,10 @@ socket.on('chat message', (msgData) => {
     actionsBottomLeft.style.display = 'flex';
     actionsBottomLeft.style.gap = '8px';
 
-    const reactionButton = document.createElement('button');
-    reactionButton.className = 'action-button reaction-button';
-    reactionButton.innerHTML = '😀';
-    reactionButton.title = 'Add reaction';
-    reactionButton.onclick = (e) => {
+    messageContent.addEventListener('click', (e) => {
         e.stopPropagation();
         showReactionPicker(e, msgData.id);
-    };
-    actionsBottomLeft.appendChild(reactionButton);
-    messageContent.appendChild(actionsBottomLeft);
+    });
 
     const usernameDiv = document.createElement('div');
     usernameDiv.className = 'username';
@@ -274,15 +270,14 @@ socket.on('chat message', (msgData) => {
     timestampDiv.textContent = new Date(msgData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     const reactionsContainer = document.createElement('div');
-    reactionsContainer.className = 'reactions-container'; 
+    reactionsContainer.className = 'message-reactions';
     if (msgData.reactions && Array.isArray(msgData.reactions)) {
         msgData.reactions.forEach(({ emoji, users }) => {
             if (users && users.length > 0) {
-                const reactionDiv = document.createElement('div'); 
+                const reactionDiv = document.createElement('div');
                 reactionDiv.className = 'reaction';
                 reactionDiv.innerHTML = `${emoji} ${users.length}`;
                 reactionDiv.title = users.join(', ');
-
                 reactionDiv.onclick = (e) => {
                     e.stopPropagation();
                     socket.emit('add reaction', { messageId: msgData.id, reaction: emoji });
@@ -592,9 +587,12 @@ function handleFileUpload(file) {
 
     reader.onerror = function() {
         console.error('Error reading file');
-        notification.textContent = `Error uploading ${file.name}`;
-        notification.className = 'notification error';
-        setTimeout(() => notification.remove(), 3000);
+        const notification = document.querySelector('.notification');
+        if (notification) {
+            notification.textContent = `Error uploading ${file.name}`;
+            notification.className = 'notification error';
+            setTimeout(() => notification.remove(), 3000);
+        }
         socket.emit('error', 'Failed to read file');
         fileInput.value = '';
     };
@@ -624,5 +622,5 @@ socket.on('upload complete', ({ fileId }) => {
         notification.textContent = 'Upload complete!';
         setTimeout(() => notification.remove(), 3000);
     }
-    fileInput.value = ''; 
-}); 
+    fileInput.value = '';
+});

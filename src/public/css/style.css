@@ -366,6 +366,7 @@ body {
     word-break: break-word;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
 }
 
 .message.sent {
@@ -373,32 +374,23 @@ body {
     align-items: flex-end;
 }
 
-.message.received {
-    margin-right: auto;
-    align-items: flex-start;
-}
-
 .message-content {
     position: relative;
     padding: 8px 12px 30px 12px;
     border-radius: 7.5px;
     max-width: 100%;
+    min-width: 35%;
     word-wrap: break-word;
     margin: 2px 0;
+    cursor: pointer;
+    flex-shrink: 1;
+    background: var(--received-msg-bg);
+    color: var(--received-msg-text);
 }
 
 .message.sent .message-content {
     background: var(--sent-msg-bg);
     color: var(--sent-msg-text);
-    border-radius: 7.5px;
-    border-top-right-radius: 4px;
-}
-
-.message.received .message-content {
-    background: var(--received-msg-bg);
-    color: var(--received-msg-text);
-    border-radius: 7.5px;
-    border-top-left-radius: 4px;
 }
 
 .message-content::before {
@@ -588,12 +580,25 @@ body {
 
 .message-reactions {
     display: flex;
+    flex-direction: row;
     flex-wrap: wrap;
     gap: 4px;
     position: absolute;
     bottom: 4px;
     left: 8px;
     z-index: 1;
+    flex-shrink: 0;
+    overflow-x: visible;
+    padding: 0;
+}
+
+.message-reactions::-webkit-scrollbar {
+    display: none;
+}
+
+.message-reactions {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 .reaction {
@@ -604,26 +609,30 @@ body {
     display: flex;
     align-items: center;
     gap: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
 .reaction:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+:root.dark-mode .reaction {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 :root.dark-mode .reaction:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .reaction.active {
-    background-color: #2196f3;
-    border-color: #2196f3;
+    background-color: var(--primary-color);
     color: white;
 }
 
 :root.dark-mode .reaction.active {
-    background-color: #2196f3;
-    border-color: #2196f3;
-    color: #555;
+    background-color: var(--primary-color);
+    color: white;
 }
 
 .emoji-picker {
@@ -1165,4 +1174,13 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     background-color: var(--input-bg);
+}
+
+.message-reactions::-webkit-scrollbar {
+    display: none;
+}
+
+.message-reactions {
+    -ms-overflow-style: none;  
+    scrollbar-width: none;
 }
