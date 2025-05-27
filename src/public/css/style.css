@@ -380,21 +380,24 @@ body {
 
 .message-content {
     position: relative;
-    padding: 8px 12px;
+    padding: 8px 12px 30px 12px;
     border-radius: 7.5px;
-    max-width: 65%;
+    max-width: 100%;
     word-wrap: break-word;
     margin: 2px 0;
-    padding-bottom: 40px;
 }
 
 .message.sent .message-content {
-    background: #e0ffe0;
-    color: #222;
+    background: var(--sent-msg-bg);
+    color: var(--sent-msg-text);
+    border-radius: 7.5px;
     border-top-right-radius: 4px;
 }
 
 .message.received .message-content {
+    background: var(--received-msg-bg);
+    color: var(--received-msg-text);
+    border-radius: 7.5px;
     border-top-left-radius: 4px;
 }
 
@@ -421,23 +424,26 @@ body {
 
 .username {
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
     font-size: 0.9em;
-    color: #555;
-    opacity: 0.8;
+    color: inherit;
+    opacity: 0.9;
 }
 
 .message-text {
-    margin-bottom: 5px;
+    margin-bottom: 2px;
     line-height: 1.4;
 }
 
 .timestamp {
-    font-size: 0.75em;
-    color: #888 !important;
+    font-size: 0.7em;
+    color: inherit;
     text-align: right;
-    margin-top: 4px;
-    opacity: 0.8;
+    margin-top: 2px;
+    opacity: 0.7;
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
 }
 
 .message-reaction-area {
@@ -585,8 +591,9 @@ body {
     flex-wrap: wrap;
     gap: 4px;
     position: absolute;
-    bottom: 8px;
-    left: 18px;
+    bottom: 4px;
+    left: 8px;
+    z-index: 1;
 }
 
 .reaction {
