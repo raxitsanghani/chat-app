@@ -5,6 +5,7 @@ module.exports = (io, onlineUsers, User) => {
   const messageReactions = new Map();
   const privateRooms = new Map();
   const uploadedFiles = new Map();
+  const messages = new Map();
   const uploadDir = path.join(__dirname, 'public', 'uploads');
 
   if (!fs.existsSync(uploadDir)) {
@@ -14,12 +15,13 @@ module.exports = (io, onlineUsers, User) => {
   io.on("connection", (socket) => {
     let currentUser = "";
     let currentRoom = "public";
-
+    let currentUserId = socket.id; 
     socket.on("join", async (data) => {
       try {
         const { username, roomKey } = data;
         currentUser = username;
         onlineUsers.set(socket.id, username);
+        currentUserId = socket.id; 
 
         await User.findOneAndUpdate(
           { username },
@@ -40,10 +42,10 @@ module.exports = (io, onlineUsers, User) => {
           io.to("public").emit("notification", `${username} joined`);
         }
 
-        const roomUsers = roomKey ? 
+        const roomUsers = roomKey ?
           Array.from(privateRooms.get(roomKey)).map(id => onlineUsers.get(id)) :
           Array.from(onlineUsers.values());
-        
+
         io.to(currentRoom).emit("userList", roomUsers);
         socket.emit("notification", `You have joined the ${roomKey ? 'private' : 'public'} chat`);
       } catch (error) {
@@ -62,30 +64,26 @@ module.exports = (io, onlineUsers, User) => {
         const messageToSend = {
           id: messageId,
           username: msgData.username,
+          message: msgData.message,
+          file: msgData.file,
           timestamp: msgData.timestamp || new Date().toISOString(),
-          reactions: msgData.reactions || []
+          reactions: msgData.reactions || [],
+          status: 'sent', 
+          senderSocketId: socket.id 
         };
 
-        if (msgData.message) {
-          messageToSend.message = msgData.message;
-        } else if (msgData.file) {
-          if (!msgData.file.name || !msgData.file.url) {
-            throw new Error('Invalid file message format');
-          }
-          messageToSend.file = msgData.file;
-        }
+        messages.set(messageId, messageToSend); 
 
-        if (!messageReactions.has(messageId)) {
-          const initialReactions = new Map();
-          if (messageToSend.reactions && Array.isArray(messageToSend.reactions)) {
+        if (messageToSend.reactions && Array.isArray(messageToSend.reactions)) {
+            if (!messageReactions.has(messageId)) {
+              messageReactions.set(messageId, new Map());
+            }
             messageToSend.reactions.forEach(r => {
               if (r.emoji && Array.isArray(r.users)) {
-                initialReactions.set(r.emoji, new Set(r.users));
+                messageReactions.get(messageId).set(r.emoji, new Set(r.users));
               }
             });
           }
-          messageReactions.set(messageId, initialReactions);
-        }
 
         io.to(currentRoom).emit("chat message", messageToSend);
 
@@ -93,6 +91,27 @@ module.exports = (io, onlineUsers, User) => {
         console.error("Error in chat message event:", error);
         socket.emit("error", "Failed to send message");
       }
+    });
+
+    socket.on('message_seen', ({ messageId }) => {
+        try {
+            const message = messages.get(messageId);
+            if (message && message.status !== 'seen') {
+                message.status = 'seen';
+                message.seenTime = new Date().toISOString();
+                messages.set(messageId, message); 
+
+                io.to(message.senderSocketId).emit('message_status_update', {
+                    messageId: message.id,
+                    status: message.status,
+                    seenTime: message.seenTime
+                });
+
+               
+            }
+        } catch (error) {
+            console.error("Error in message_seen event:", error);
+        }
     });
 
     socket.on('start file upload', ({ name, type, size, fileId }) => {
@@ -195,18 +214,24 @@ module.exports = (io, onlineUsers, User) => {
 
     socket.on("add reaction", ({ messageId, reaction }) => {
       try {
+        if (!messages.has(messageId)) {
+             console.error(`Attempted to add reaction to non-existent message: ${messageId}`);
+             socket.emit("error", "Cannot react to this message");
+             return;
+        }
+
         if (!messageReactions.has(messageId)) {
           messageReactions.set(messageId, new Map());
         }
-        
+
         const reactionsForMessage = messageReactions.get(messageId);
-        
+
         if (!reactionsForMessage.has(reaction)) {
           reactionsForMessage.set(reaction, new Set());
         }
-        
+
         const reactionUsersSet = reactionsForMessage.get(reaction);
-        
+
         if (reactionUsersSet.has(currentUser)) {
           reactionUsersSet.delete(currentUser);
           if (reactionUsersSet.size === 0) {
@@ -215,12 +240,12 @@ module.exports = (io, onlineUsers, User) => {
         } else {
           reactionUsersSet.add(currentUser);
         }
-        
+
         if (reactionsForMessage.size === 0) {
           messageReactions.delete(messageId);
         }
 
-        io.emit("reaction update", {
+        io.to(currentRoom).emit("reaction update", {
           messageId,
           reactions: Array.from(reactionsForMessage.entries()).map(([emoji, users]) => ({
             emoji,
@@ -236,7 +261,9 @@ module.exports = (io, onlineUsers, User) => {
     socket.on('delete message', ({ messageId }) => {
       try {
         console.log(`Deleting message with ID: ${messageId}`);
-        io.emit('message deleted', { messageId });
+        messages.delete(messageId);
+        messageReactions.delete(messageId); 
+        io.to(currentRoom).emit('message deleted', { messageId }); 
       } catch (error) {
         console.error("Error in delete message:", error);
         socket.emit('error', 'Failed to delete message');
@@ -246,7 +273,10 @@ module.exports = (io, onlineUsers, User) => {
     socket.on('edit message', ({ messageId, newText }) => {
       try {
         console.log(`Editing message with ID: ${messageId}`);
-        io.emit('message edited', { messageId, newText });
+        if (messages.has(messageId)) {
+            messages.get(messageId).message = newText;
+        }
+        io.to(currentRoom).emit('message edited', { messageId, newText }); 
       } catch (error) {
         console.error("Error in edit message:", error);
         socket.emit('error', 'Failed to edit message');
@@ -254,11 +284,11 @@ module.exports = (io, onlineUsers, User) => {
     });
 
     socket.on("typing", (username) => {
-      socket.broadcast.emit("typing", username);
+      socket.to(currentRoom).emit("typing", username);
     });
 
     socket.on("stop typing", () => {
-      socket.broadcast.emit("stop typing");
+      socket.to(currentRoom).emit("stop typing");
     });
 
     socket.on("disconnect", async () => {
@@ -270,7 +300,7 @@ module.exports = (io, onlineUsers, User) => {
           );
 
           onlineUsers.delete(socket.id);
-          
+
           if (currentRoom !== "public") {
             privateRooms.get(currentRoom)?.delete(socket.id);
             if (privateRooms.get(currentRoom)?.size === 0) {
@@ -281,10 +311,10 @@ module.exports = (io, onlineUsers, User) => {
             io.to("public").emit("notification", `${currentUser} left`);
           }
 
-          const roomUsers = currentRoom !== "public" ? 
+          const roomUsers = currentRoom !== "public" ?
             Array.from(privateRooms.get(currentRoom) || []).map(id => onlineUsers.get(id)) :
             Array.from(onlineUsers.values());
-          
+
           io.to(currentRoom).emit("userList", roomUsers);
         } catch (error) {
           console.error("Error in disconnect event:", error);

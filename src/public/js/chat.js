@@ -295,9 +295,20 @@ socket.on('chat message', (msgData) => {
     messageContent.appendChild(timestampDiv);
     messageContent.appendChild(reactionsContainer);
 
+    if (msgData.username === username) {
+        const statusIcon = document.createElement('span');
+        statusIcon.className = 'message-status';
+        updateMessageStatusIcon(statusIcon, msgData.status || 'sent');
+        messageContent.appendChild(statusIcon);
+    }
+
     messageDiv.appendChild(messageContent);
     messagesContainer.appendChild(messageDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    if (msgData.username !== username) {
+        messageObserver.observe(messageDiv);
+    }
 });
 
 function showReactionPicker(event, messageId) {
@@ -482,10 +493,13 @@ socket.on('message edited', ({ messageId, newText }) => {
 function sendMessage() {
     const message = messageInput.value.trim();
     if (message) {
+        const messageId = Date.now().toString();
         socket.emit('chat message', {
+            id: messageId,
             username,
             message,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            status: 'sent'
         });
         messageInput.value = '';
         socket.emit('stop typing');
@@ -623,4 +637,49 @@ socket.on('upload complete', ({ fileId }) => {
         setTimeout(() => notification.remove(), 3000);
     }
     fileInput.value = '';
+});
+
+function updateMessageStatusIcon(iconElement, status) {
+    iconElement.classList.remove('sent', 'delivered', 'seen');
+    iconElement.classList.add(status);
+    if (status === 'sent') {
+        iconElement.innerHTML = '&#10003;';
+        iconElement.title = 'Sent';
+        iconElement.style.color = '#999';
+    } else if (status === 'delivered') {
+        iconElement.innerHTML = '&#10003;&#10003;';
+        iconElement.title = 'Delivered';
+        iconElement.style.color = '#999';
+    } else if (status === 'seen') {
+        iconElement.innerHTML = '&#10003;&#10003;';
+        iconElement.title = 'Seen';
+        iconElement.style.color = 'var(--primary-color)';
+    }
+}
+
+const messageObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting && entry.target.classList.contains('received')) {
+            const messageId = entry.target.dataset.messageId;
+            if (messageId) {
+                socket.emit('message_seen', { messageId });
+                messageObserver.unobserve(entry.target);
+            }
+        }
+    });
+}, { threshold: 0.5 });
+
+socket.on('message_status_update', ({ messageId, status, seenTime }) => {
+    const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (messageDiv) {
+        const statusIcon = messageDiv.querySelector('.message-status');
+        const timestampDiv = messageDiv.querySelector('.timestamp');
+        if (statusIcon) {
+            updateMessageStatusIcon(statusIcon, status);
+            if (status === 'seen' && seenTime && timestampDiv) {
+                timestampDiv.textContent += ` Seen ${new Date(seenTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                timestampDiv.classList.add('seen-time');
+            }
+        }
+    }
 });

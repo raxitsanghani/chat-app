@@ -405,13 +405,13 @@ body {
 .message.sent .message-content::before {
     right: -6px;
     border-top-left-radius: 12px;
-    box-shadow: -6px -6px 0 0 #e0ffe0;
+    box-shadow: -6px -6px 0 0 var(--sent-msg-bg);
 }
 
 .message.received .message-content::before {
     left: -6px;
     border-top-right-radius: 12px;
-    box-shadow: 6px -6px 0 0 #fff;
+    box-shadow: 6px -6px 0 0 var(--received-msg-bg);
 }
 
 .username {
@@ -435,7 +435,29 @@ body {
     opacity: 0.7;
     position: absolute;
     bottom: 4px;
+    right: 18px;
+}
+
+.message-status {
+    font-size: 0.9em;
+    position: absolute;
+    bottom: 4px;
     right: 8px;
+    z-index: 1;
+    color: #999;
+    font-weight: bold;
+}
+
+
+.message-status.seen {
+    color: #555;
+}
+
+.timestamp.seen-time {
+    font-size: 0.6em;
+    position: absolute;
+    bottom: 4px;
+    right: 35px;
 }
 
 .message-reaction-area {
@@ -592,6 +614,16 @@ body {
     padding: 0;
 }
 
+.message.sent .message-reactions {
+    right: auto;
+    left: 8px;
+}
+
+.message.received .message-reactions {
+    left: 8px;
+    right: auto;
+}
+
 .message-reactions::-webkit-scrollbar {
     display: none;
 }
@@ -618,7 +650,7 @@ body {
 }
 
 :root.dark-mode .reaction {
-    background: rgba(255, 255, 255, 0.1);
+     background: rgba(255, 255, 255, 0.1);
 }
 
 :root.dark-mode .reaction:hover {
@@ -626,13 +658,13 @@ body {
 }
 
 .reaction.active {
-    background-color: var(--primary-color);
+    background-color: #555;
     color: white;
 }
 
 :root.dark-mode .reaction.active {
-    background-color: var(--primary-color);
-    color: white;
+     background-color: #555;
+     color: white;
 }
 
 .emoji-picker {
@@ -967,11 +999,35 @@ body {
 
 .message-reactions {
     display: flex;
+    flex-direction: row;
     flex-wrap: wrap;
     gap: 4px;
     position: absolute;
-    bottom: 8px;
-    left: 18px;
+    bottom: 4px;
+    left: 8px;
+    z-index: 1;
+    flex-shrink: 0;
+    overflow-x: visible;
+    padding: 0;
+}
+
+.message.sent .message-reactions {
+    right: auto;
+    left: 8px;
+}
+
+.message.received .message-reactions {
+    left: 8px;
+    right: auto;
+}
+
+.message-reactions::-webkit-scrollbar {
+    display: none;
+}
+
+.message-reactions {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 .reaction {
@@ -982,6 +1038,30 @@ body {
     display: flex;
     align-items: center;
     gap: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.reaction:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+:root.dark-mode .reaction {
+     background: rgba(255, 255, 255, 0.1);
+}
+
+:root.dark-mode .reaction:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.reaction.active {
+    background-color: #555;
+    color: white;
+}
+
+:root.dark-mode .reaction.active {
+     background-color: #555;
+     color: white;
 }
 
 .message-edit-input {
@@ -1155,7 +1235,7 @@ body {
 }
 
 .private-room-link {
-    color: var(--button-bg);
+    color: #555;
     text-decoration: none;
     display: block;
     margin-bottom: 10px;
@@ -1164,7 +1244,7 @@ body {
 }
 
 .private-room-link:hover {
-    color: var(--primary-color);
+    color: #555;
     text-decoration: underline;
 }
 
@@ -1174,13 +1254,4 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     background-color: var(--input-bg);
-}
-
-.message-reactions::-webkit-scrollbar {
-    display: none;
-}
-
-.message-reactions {
-    -ms-overflow-style: none;  
-    scrollbar-width: none;
 }
