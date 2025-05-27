@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = (io, onlineUsers, User) => {
   const messageReactions = new Map();
-
+  const privateRooms = new Map();
   const uploadedFiles = new Map();
   const uploadDir = path.join(__dirname, 'public', 'uploads');
 
@@ -13,9 +13,11 @@ module.exports = (io, onlineUsers, User) => {
 
   io.on("connection", (socket) => {
     let currentUser = "";
+    let currentRoom = "public";
 
-    socket.on("join", async (username) => {
+    socket.on("join", async (data) => {
       try {
+        const { username, roomKey } = data;
         currentUser = username;
         onlineUsers.set(socket.id, username);
 
@@ -25,10 +27,25 @@ module.exports = (io, onlineUsers, User) => {
           { upsert: true }
         );
 
-        io.emit("notification", `${username} joined`);
-        io.emit("userList", Array.from(onlineUsers.values()));
+        if (roomKey) {
+          currentRoom = roomKey;
+          if (!privateRooms.has(roomKey)) {
+            privateRooms.set(roomKey, new Set());
+          }
+          privateRooms.get(roomKey).add(socket.id);
+          socket.join(roomKey);
+          socket.to(roomKey).emit("notification", `${username} joined the private room`);
+        } else {
+          socket.join("public");
+          io.to("public").emit("notification", `${username} joined`);
+        }
+
+        const roomUsers = roomKey ? 
+          Array.from(privateRooms.get(roomKey)).map(id => onlineUsers.get(id)) :
+          Array.from(onlineUsers.values());
         
-        socket.emit("notification", "You have joined the chat");
+        io.to(currentRoom).emit("userList", roomUsers);
+        socket.emit("notification", `You have joined the ${roomKey ? 'private' : 'public'} chat`);
       } catch (error) {
         console.error("Error in join event:", error);
         socket.emit("error", "Failed to join chat");
@@ -70,7 +87,7 @@ module.exports = (io, onlineUsers, User) => {
           messageReactions.set(messageId, initialReactions);
         }
 
-        io.emit("chat message", messageToSend);
+        io.to(currentRoom).emit("chat message", messageToSend);
 
       } catch (error) {
         console.error("Error in chat message event:", error);
@@ -253,8 +270,22 @@ module.exports = (io, onlineUsers, User) => {
           );
 
           onlineUsers.delete(socket.id);
-          io.emit("notification", `${currentUser} left`);
-          io.emit("userList", Array.from(onlineUsers.values()));
+          
+          if (currentRoom !== "public") {
+            privateRooms.get(currentRoom)?.delete(socket.id);
+            if (privateRooms.get(currentRoom)?.size === 0) {
+              privateRooms.delete(currentRoom);
+            }
+            socket.to(currentRoom).emit("notification", `${currentUser} left the private room`);
+          } else {
+            io.to("public").emit("notification", `${currentUser} left`);
+          }
+
+          const roomUsers = currentRoom !== "public" ? 
+            Array.from(privateRooms.get(currentRoom) || []).map(id => onlineUsers.get(id)) :
+            Array.from(onlineUsers.values());
+          
+          io.to(currentRoom).emit("userList", roomUsers);
         } catch (error) {
           console.error("Error in disconnect event:", error);
         }

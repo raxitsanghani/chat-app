@@ -1,4 +1,6 @@
 const username = sessionStorage.getItem('username');
+const roomKey = sessionStorage.getItem('roomKey');
+
 if (!username) {
     window.location.href = '/';
 }
@@ -139,7 +141,14 @@ document.addEventListener('click', (e) => {
 
 socket.on('connect', () => {
     console.log('Connected to server');
-    socket.emit('join', username);
+    socket.emit('join', { username, roomKey });
+    
+    const roomIdDisplay = document.getElementById('room-id-display');
+    if (roomKey) {
+        roomIdDisplay.textContent = `Room ID: ${roomKey}`;
+    } else {
+        roomIdDisplay.textContent = 'Room ID: public';
+    }
 });
 
 socket.on('connect_error', (error) => {
@@ -264,22 +273,32 @@ socket.on('chat message', (msgData) => {
     timestampDiv.className = 'timestamp';
     timestampDiv.textContent = new Date(msgData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    const reactionsDiv = document.createElement('div');
-    reactionsDiv.className = 'message-reactions';
-    if (msgData.reactions) {
-        Object.entries(msgData.reactions).forEach(([emoji, users]) => {
-            const reaction = document.createElement('span');
-            reaction.className = 'reaction';
-            reaction.textContent = `${emoji} ${users.length}`;
-            reaction.title = users.join(', ');
-            reactionsDiv.appendChild(reaction);
+    const reactionsContainer = document.createElement('div');
+    reactionsContainer.className = 'reactions-container'; 
+    if (msgData.reactions && Array.isArray(msgData.reactions)) {
+        msgData.reactions.forEach(({ emoji, users }) => {
+            if (users && users.length > 0) {
+                const reactionDiv = document.createElement('div'); 
+                reactionDiv.className = 'reaction';
+                reactionDiv.innerHTML = `${emoji} ${users.length}`;
+                reactionDiv.title = users.join(', ');
+
+                reactionDiv.onclick = (e) => {
+                    e.stopPropagation();
+                    socket.emit('add reaction', { messageId: msgData.id, reaction: emoji });
+                };
+                if (users.includes(username)) {
+                    reactionDiv.classList.add('active');
+                }
+                reactionsContainer.appendChild(reactionDiv);
+            }
         });
     }
 
     messageContent.appendChild(usernameDiv);
     messageContent.appendChild(messageText);
     messageContent.appendChild(timestampDiv);
-    messageContent.appendChild(reactionsDiv);
+    messageContent.appendChild(reactionsContainer);
 
     messageDiv.appendChild(messageContent);
     messagesContainer.appendChild(messageDiv);

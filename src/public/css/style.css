@@ -57,7 +57,6 @@
 body,
 .users-sidebar,
 .chat-header,
-.btn-exit,
 .message-content,
 .welcome-card,
 .form-group input,
@@ -306,6 +305,24 @@ body {
     justify-content: space-between;
     align-items: center;
     transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.header-right {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.room-id {
+    font-size: 0.9em;
+    opacity: 0.9;
+    color: var(--header-text);
 }
 
 :root.dark-mode .chat-header {
@@ -563,15 +580,13 @@ body {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.reactions-container {
+.message-reactions {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
-    margin-top: 5px;
-    min-height: 24px;
+    gap: 4px;
     position: absolute;
     bottom: 8px;
-    left: 12px;
+    left: 18px;
 }
 
 .reaction {
@@ -940,7 +955,7 @@ body {
     gap: 4px;
     position: absolute;
     bottom: 8px;
-    left: 12px;
+    left: 18px;
 }
 
 .reaction {
@@ -1121,4 +1136,26 @@ body {
 :root.dark-mode .edit-actions .cancel-button {
     background-color: #444;
     color: #fff;
+}
+
+.private-room-link {
+    color: var(--button-bg);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    transition: color 0.2s ease;
+}
+
+.private-room-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.private-room-form {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--input-bg);
 }
