@@ -334,27 +334,25 @@ body {
 
 .btn-exit {
     padding: 8px 16px;
-    background: #1a73e8;
-    color: black;
+    background: transparent;
+    box-shadow: 1px 1px 1px 1px;
+    border-radius: 5px;
+    color: rgb(249, 244, 244);
     border: none;
-    color: #090909;
     cursor: pointer;
     font-weight: bold;
 }
 
 :root.dark-mode .btn-exit {
-    background: #53bdeb;
-    color: black;
+    background: transparent;
+    color: rgb(244, 242, 242);
+    border-radius: 5px;
+    box-shadow: 1px 1px 1px 1px;
 }
 
 .btn-exit:hover {
     background: #1557b0;
 }
-
-:root.dark-mode .btn-exit:hover {
-    background: #3fa0d7;
-}
-
 .messages-container {
     flex: 1;
     padding: 20px;
@@ -452,7 +450,7 @@ body {
 }
 
 .message-status.seen {
-    color: #4a90e2;
+    color: #2481ec;
 }
 
 .timestamp.seen-time {
@@ -769,8 +767,8 @@ body {
 }
 
 .mode-switch-button {
-    background: none;
-    border: none;
+    background: transparent;
+    box-shadow: 1px 1px 1px 1px;
     color: white;
     font-size: 1rem;
     cursor: pointer;
@@ -986,8 +984,9 @@ body {
 }
 
 .notification {
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
+    background-color: transparent;
+    color: rgb(17, 1, 1);
+    box-shadow: 1px 1px 1px 1px ;
     padding: 8px 16px;
     border-radius: 8px;
     margin: 10px auto;
@@ -1002,8 +1001,9 @@ body {
 }
 
 :root.dark-mode .notification {
-    background-color: rgba(255, 255, 255, 0.9);
-    color: #111b21;
+    background-color: transparent;
+    color: #16608e;
+    box-shadow: 1px 1px 1px 1px ;
 }
 
 :root.dark-mode .notification.error {
