@@ -380,20 +380,20 @@ body {
 .message-content {
     position: relative;
     padding: 8px 12px 30px 12px;
-    color: #555;
+    color: #111b21;
     max-width: 100%;
     min-width: 35%;
     word-wrap: break-word;
     margin: 2px 0;
     cursor: pointer;
     flex-shrink: 1;
-    background: var(--received-msg-bg);
-    color: var(--received-msg-text);
+    background: #ffffff;
+    color: #111b21;
 }
 
 .message.sent .message-content {
-    background: var(--sent-msg-bg);
-    color: var(--sent-msg-text);
+    background: #d9fdd3;
+    color: #111b21;
 }
 
 .message-content::before {
@@ -408,13 +408,13 @@ body {
 .message.sent .message-content::before {
     right: -6px;
     border-top-left-radius: 12px;
-    box-shadow: -6px -6px 0 0 var(--sent-msg-bg);
+    box-shadow: -6px -6px 0 0 #d9fdd3;
 }
 
 .message.received .message-content::before {
     left: -6px;
     border-top-right-radius: 12px;
-    box-shadow: 6px -6px 0 0 var(--received-msg-bg);
+    box-shadow: 6px -6px 0 0 #ffffff;
 }
 
 .username {
@@ -432,7 +432,7 @@ body {
 
 .timestamp {
     font-size: 0.7em;
-    color: inherit;
+    color: #555;
     text-align: right;
     margin-top: 2px;
     opacity: 0.7;
@@ -451,9 +451,8 @@ body {
     font-weight: bold;
 }
 
-
 .message-status.seen {
-    color: #555;
+    color: #4a90e2;
 }
 
 .timestamp.seen-time {
@@ -535,7 +534,7 @@ body {
 
 .notification {
     text-align: center;
-    color: #667781;
+    color: #555;
     margin: 10px 0;
     font-style: italic;
 }
@@ -545,7 +544,7 @@ body {
 }
 
 .typing-indicator {
-    color: #667781;
+    color: #555;
     font-style: italic;
     margin: 5px 0;
 }
@@ -748,15 +747,14 @@ body {
     max-width: 80%;
     text-align: center;
     animation: fadeInOut 3s ease-in-out;
+    z-index: 1000;
 }
 
 .file-link {
     color: #2196f3;
     text-decoration: none;
-    font-weight: bold;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+    display: block;
+    width: 100%;
 }
 
 .file-link:hover {
@@ -861,7 +859,7 @@ body {
 
 .message-input:focus {
     outline: none;
-    border-color: #2196f3;
+    border-color: #1a73e8;
     box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
 }
 
@@ -884,7 +882,7 @@ body {
 
 .send-button:hover,
 .emoji-button:hover {
-    background: #2196f3;
+    background: #1976d2;
     transform: translateY(-1px);
 }
 
@@ -968,7 +966,7 @@ body {
 
 .file-size {
     font-size: 0.85em;
-    color: var(--timestamp-color);
+    color: #555;
 }
 
 .message-image {
@@ -981,13 +979,6 @@ body {
 
 .message-image:hover {
     transform: scale(1.02);
-}
-
-.file-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    width: 100%;
 }
 
 .file-link:hover {
@@ -1023,7 +1014,7 @@ body {
 .message-more-menu-wrapper {
     position: absolute;
     top: 8px;
-    right: 8px;
+    right: 12px;
     z-index: 10;
 }
 
@@ -1093,7 +1084,7 @@ body {
 }
 
 :root.dark-mode .message-more-option {
-    color: #555;
+    color: #e9edef;
 }
 
 .message-more-option:hover {
@@ -1153,4 +1144,8 @@ body {
     padding: 10px;
     border: 1px solid #555;
     color: #555;
+}
+
+.message.received .message-status {
+    display: none;
 }

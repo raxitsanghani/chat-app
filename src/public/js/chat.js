@@ -398,15 +398,15 @@ function updateMessageStatusIcon(iconElement, status) {
     iconElement.classList.remove('sent', 'delivered', 'seen');
     iconElement.classList.add(status);
     if (status === 'sent') {
-        iconElement.innerHTML = '&#10003;';
+        iconElement.innerHTML = '✓';
         iconElement.title = 'Sent';
         iconElement.style.color = '#999';
     } else if (status === 'delivered') {
-        iconElement.innerHTML = '&#10003;&#10003;';
+        iconElement.innerHTML = '✓✓';
         iconElement.title = 'Delivered';
         iconElement.style.color = '#999';
     } else if (status === 'seen') {
-        iconElement.innerHTML = '&#10003;&#10003;';
+        iconElement.innerHTML = '✓✓';
         iconElement.title = 'Seen';
         iconElement.style.color = 'var(--primary-color)';
     }
