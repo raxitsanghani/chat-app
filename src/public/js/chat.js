@@ -20,10 +20,6 @@ let isTyping = false;
 
 const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '👏'];
 
-const fileInput = document.getElementById('file-input');
-const uploadButton = document.getElementById('upload-button');
-const CHUNK_SIZE = 50 * 1024;
-
 const emojiButton = document.getElementById('emoji-button');
 
 const EMOJIS = [
@@ -33,9 +29,30 @@ const EMOJIS = [
     '👍', '👎', '👏', '🙌', '👐', '🤝', '🙏', '✋', '🤚', '🖐️', 
     '🖖', '👌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👊', '🤛', '🤜',
     '👋', '❤️', '💖', '💕', '💘', '💝', '💓', '💗', '💞', '💟', 
-    '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎'
-
+    '🧡', '💛', '💚', '💙', '💜', '��', '🤍', '🤎'
 ]; 
+
+const fileInput = document.getElementById('file-input');
+const uploadButton = document.getElementById('upload-button');
+
+const ALLOWED_TYPES = {
+    'image/jpeg': '🖼️',
+    'image/png': '🖼️',
+    'image/gif': '🖼️',
+    'image/webp': '🖼️',
+    'application/zip': '📦',
+    'application/x-zip-compressed': '📦',
+    'application/pdf': '📄',
+    'text/plain': '📝',
+    'application/msword': '📄',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '📄',
+    'application/vnd.ms-excel': '📊',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '📊',
+    'application/vnd.ms-powerpoint': '📑',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': '📑'
+};
+
+const MAX_FILE_SIZE = 500 * 1024 * 1024;
 
 function setTheme(theme) {
     const htmlElement = document.documentElement;
@@ -119,24 +136,24 @@ document.addEventListener('click', (e) => {
 const reactionPicker = document.createElement('div');
 reactionPicker.className = 'reaction-picker';
 reactionPicker.style.display = 'none';
-reactionPicker.style.zIndex = '1002'; 
+reactionPicker.style.zIndex = '1002';
 
 REACTIONS.forEach(emoji => {
     const button = document.createElement('button');
     button.textContent = emoji;
     button.className = 'reaction-button';
     button.onclick = (e) => {
-        e.stopPropagation(); 
+        e.stopPropagation();
         const messageId = reactionPicker.dataset.messageId;
         socket.emit('add reaction', { messageId, reaction: emoji });
-        reactionPicker.style.display = 'none'; 
+        reactionPicker.style.display = 'none';
     };
     reactionPicker.appendChild(button);
 });
 document.body.appendChild(reactionPicker);
 
 document.addEventListener('click', (e) => {
-    if (!reactionPicker.contains(e.target) && !e.target.classList.contains('reaction-button')) {
+    if (!reactionPicker.contains(e.target) && !e.target.closest('.message-content')) {
         reactionPicker.style.display = 'none';
     }
 });
@@ -158,166 +175,19 @@ socket.on('connect_error', (error) => {
 });
 
 socket.on('chat message', (msgData) => {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('message');
-    if (msgData.username === username) {
-        messageDiv.classList.add('sent');
-    } else {
-        messageDiv.classList.add('received');
-    }
-    messageDiv.dataset.messageId = msgData.id;
+    appendMessage(msgData, msgData.username === username);
+});
 
-    const messageContent = document.createElement('div');
-    messageContent.className = 'message-content';
-    messageContent.style.position = 'relative';
-
-    if (msgData.username === username) {
-        const moreMenuWrapper = document.createElement('div');
-        moreMenuWrapper.className = 'message-more-menu-wrapper';
-        moreMenuWrapper.style.position = 'absolute';
-        moreMenuWrapper.style.top = '8px';
-        moreMenuWrapper.style.right = '12px';
-
-        const moreButton = document.createElement('button');
-        moreButton.className = 'message-more-btn';
-        moreButton.innerHTML = '&#8942;';
-        moreButton.title = 'More options';
-        moreButton.onclick = (e) => {
-            e.stopPropagation();
-            document.querySelectorAll('.message-more-dropdown').forEach(el => el.style.display = 'none');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        };
-        moreMenuWrapper.appendChild(moreButton);
-
-        const dropdown = document.createElement('div');
-        dropdown.className = 'message-more-dropdown';
-        dropdown.style.display = 'none';
-        dropdown.style.position = 'absolute';
-        dropdown.style.top = '28px';
-        dropdown.style.right = '0';
-        dropdown.style.zIndex = '10';
-
-        const editOption = document.createElement('div');
-        editOption.className = 'message-more-option';
-        editOption.innerHTML = '<span class="option-icon">✏️</span> Edit Message';
-        editOption.onclick = (e) => {
-            e.stopPropagation();
-            dropdown.style.display = 'none';
-            enableMessageEditing(messageDiv, msgData);
-        };
-        dropdown.appendChild(editOption);
-
-        const deleteOption = document.createElement('div');
-        deleteOption.className = 'message-more-option';
-        deleteOption.innerHTML = '<span class="option-icon">🗑️</span> Delete Message';
-        deleteOption.onclick = (e) => {
-            e.stopPropagation();
-            dropdown.style.display = 'none';
-            if (confirm('Are you sure you want to delete this message?')) {
-                socket.emit('delete message', { messageId: msgData.id });
-            }
-        };
-        dropdown.appendChild(deleteOption);
-
-        moreMenuWrapper.appendChild(dropdown);
-        messageContent.appendChild(moreMenuWrapper);
-
-        document.addEventListener('click', (e) => {
-            if (!moreMenuWrapper.contains(e.target)) {
-                dropdown.style.display = 'none';
-            }
-        });
-    }
-
-    const actionsBottomLeft = document.createElement('div');
-    actionsBottomLeft.className = 'message-actions-bottom-left';
-    actionsBottomLeft.style.position = 'absolute';
-    actionsBottomLeft.style.bottom = '8px';
-    actionsBottomLeft.style.left = '12px';
-    actionsBottomLeft.style.display = 'flex';
-    actionsBottomLeft.style.gap = '8px';
-
-    messageContent.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showReactionPicker(e, msgData.id);
-    });
-
-    const usernameDiv = document.createElement('div');
-    usernameDiv.className = 'username';
-    usernameDiv.textContent = msgData.username;
-
-    let messageText;
-    if (msgData.file) {
-        console.log('Received message with file:', msgData.file);
-        messageText = document.createElement('div');
-        messageText.className = 'message-text';
-        if (msgData.file.type.startsWith('image/')) {
-            console.log('Displaying image:', msgData.file.url);
-            const img = document.createElement('img');
-            img.src = msgData.file.url;
-            img.alt = msgData.file.name;
-            img.style.maxWidth = '200px';
-            img.style.maxHeight = '200px';
-            messageText.appendChild(img);
-        } else {
-            console.log('Displaying download link for file:', msgData.file.name, msgData.file.url);
-            const link = document.createElement('a');
-            link.href = msgData.file.url;
-            link.textContent = `Download: ${msgData.file.name}`;
-            link.target = '_blank';
-            link.className = 'file-link';
-            messageText.appendChild(link);
-        }
-    } else {
-        messageText = document.createElement('div');
-        messageText.className = 'message-text';
-        messageText.textContent = msgData.message;
-    }
-
-    const timestampDiv = document.createElement('div');
-    timestampDiv.className = 'timestamp';
-    timestampDiv.textContent = new Date(msgData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    const reactionsContainer = document.createElement('div');
-    reactionsContainer.className = 'message-reactions';
-    if (msgData.reactions && Array.isArray(msgData.reactions)) {
-        msgData.reactions.forEach(({ emoji, users }) => {
-            if (users && users.length > 0) {
-                const reactionDiv = document.createElement('div');
-                reactionDiv.className = 'reaction';
-                reactionDiv.innerHTML = `${emoji} ${users.length}`;
-                reactionDiv.title = users.join(', ');
-                reactionDiv.onclick = (e) => {
-                    e.stopPropagation();
-                    socket.emit('add reaction', { messageId: msgData.id, reaction: emoji });
-                };
-                if (users.includes(username)) {
-                    reactionDiv.classList.add('active');
-                }
-                reactionsContainer.appendChild(reactionDiv);
-            }
-        });
-    }
-
-    messageContent.appendChild(usernameDiv);
-    messageContent.appendChild(messageText);
-    messageContent.appendChild(timestampDiv);
-    messageContent.appendChild(reactionsContainer);
-
-    if (msgData.username === username) {
-        const statusIcon = document.createElement('span');
-        statusIcon.className = 'message-status';
-        updateMessageStatusIcon(statusIcon, msgData.status || 'sent');
-        messageContent.appendChild(statusIcon);
-    }
-
-    messageDiv.appendChild(messageContent);
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-    if (msgData.username !== username) {
-        messageObserver.observe(messageDiv);
-    }
+socket.on('file uploaded', (fileData) => {
+    appendMessage({
+        type: 'file',
+        username: fileData.username,
+        fileName: fileData.originalName,
+        fileType: fileData.fileType,
+        fileSize: fileData.fileSize,
+        fileUrl: fileData.fileUrl,
+        timestamp: fileData.timestamp
+    }, fileData.username === username);
 });
 
 function showReactionPicker(event, messageId) {
@@ -380,12 +250,12 @@ socket.on('reaction update', ({ messageId, reactions }) => {
     if (messageDiv) {
         let reactionsContainer = messageDiv.querySelector('.reactions-container');
         if (!reactionsContainer) {
-             reactionsContainer = document.createElement('div');
-             reactionsContainer.className = 'reactions-container';
-             messageDiv.querySelector('.message-content').appendChild(reactionsContainer);
+            reactionsContainer = document.createElement('div');
+            reactionsContainer.className = 'reactions-container';
+            messageDiv.querySelector('.message-content').appendChild(reactionsContainer);
         }
         
-        reactionsContainer.innerHTML = ''; 
+        reactionsContainer.innerHTML = '';
         
         reactions.forEach(({ emoji, users }) => {
             const reactionDiv = document.createElement('div');
@@ -475,26 +345,8 @@ socket.on('message edited', ({ messageId, newText }) => {
     const messageElement = messagesContainer.querySelector(`[data-message-id="${messageId}"]`);
     if (messageElement) {
         const messageTextElement = messageElement.querySelector('.message-text');
-        const inputElement = messageElement.querySelector('.message-edit-input');
-        const buttonsContainer = messageElement.querySelector('.edit-buttons');
-
         if (messageTextElement) {
             messageTextElement.textContent = newText;
-        } else if (inputElement) {
-            const newMessageTextElement = document.createElement('div');
-            newMessageTextElement.className = 'message-text';
-            newMessageTextElement.textContent = newText;
-            const messageContentElement = messageElement.querySelector('.message-content');
-            if(messageContentElement) {
-                messageContentElement.replaceChild(newMessageTextElement, inputElement);
-            }
-        }
-
-        if (inputElement) {
-            inputElement.remove();
-        }
-        if (buttonsContainer) {
-            buttonsContainer.remove();
         }
     }
 });
@@ -542,135 +394,6 @@ document.getElementById('exit-button').addEventListener('click', () => {
     window.location.href = '/';
 });
 
-uploadButton.addEventListener('click', () => {
-    fileInput.click(); 
-});
-
-function handleFileUpload(file) {
-    if (file.size > 500 * 1024 * 1024) { // 500MB limit
-        const notification = document.createElement('div');
-        notification.className = 'notification error';
-        notification.textContent = 'File size must be less than 500MB';
-        messagesContainer.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
-        fileInput.value = '';
-        return;
-    }
-
-    // Added support for more image types, zip, and other common file types
-    const allowedTypes = [
-        'image/*', // All image types
-        'application/pdf',
-        'text/plain',
-        'application/zip',
-        'application/x-zip-compressed',
-        // Add other common types as needed, e.g., for documents, spreadsheets, etc.
-        // 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-        // 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-        // 'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
-        // 'application/vnd.ms-excel', // .xls
-        // 'application/msword', // .doc
-        // 'application/vnd.ms-powerpoint', // .ppt
-    ];
-    
-    const isFileTypeAllowed = allowedTypes.some(type => {
-        if (type.endsWith('/*')) {
-            return file.type.startsWith(type.slice(0, -1));
-        } else {
-            return file.type === type;
-        }
-    });
-
-    if (!isFileTypeAllowed) {
-        const notification = document.createElement('div');
-        notification.className = 'notification error';
-        notification.textContent = 'File type not allowed. Supported types: Images, PDF, Text, ZIP, etc.';
-        messagesContainer.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
-        fileInput.value = '';
-        return;
-    }
-
-    const fileId = Date.now().toString();
-    const reader = new FileReader();
-    let offset = 0;
-
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.textContent = `Uploading ${file.name}...`;
-    messagesContainer.appendChild(notification);
-
-    socket.emit('start file upload', {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        fileId
-    });
-
-    function readNextChunk() {
-        const slice = file.slice(offset, offset + CHUNK_SIZE);
-        reader.readAsArrayBuffer(slice);
-    }
-
-    reader.onload = function(e) {
-        const chunk = e.target.result;
-        const chunkIndex = Math.floor(offset / CHUNK_SIZE);
-
-        socket.emit('upload file chunk', {
-            fileId,
-            chunk,
-            chunkIndex
-        });
-
-        offset += chunk.byteLength;
-
-        if (offset < file.size) {
-            readNextChunk();
-        } else {
-            socket.emit('end file upload', { fileId });
-        }
-    };
-
-    reader.onerror = function() {
-        console.error('Error reading file');
-        const notification = document.querySelector('.notification');
-        if (notification) {
-            notification.textContent = `Error uploading ${file.name}`;
-            notification.className = 'notification error';
-            setTimeout(() => notification.remove(), 3000);
-        }
-        socket.emit('error', 'Failed to read file');
-        fileInput.value = '';
-    };
-}
-
-fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        handleFileUpload(file);
-    }
-});
-
-socket.on('upload progress', ({ fileId, progress }) => {
-    const notification = document.querySelector('.notification');
-    if (notification) {
-        notification.textContent = `Uploading... ${progress}%`;
-    }
-});
-
-socket.on('upload started', ({ fileId }) => {
-    console.log(`Upload started for ${fileId}`);
-});
-
-socket.on('upload complete', ({ fileId }) => {
-    const notification = document.querySelector('.notification');
-    if (notification) {
-        notification.textContent = 'Upload complete!';
-        setTimeout(() => notification.remove(), 3000);
-    }
-    fileInput.value = '';
-});
-
 function updateMessageStatusIcon(iconElement, status) {
     iconElement.classList.remove('sent', 'delivered', 'seen');
     iconElement.classList.add(status);
@@ -715,3 +438,229 @@ socket.on('message_status_update', ({ messageId, status, seenTime }) => {
         }
     }
 });
+
+function getFileIcon(type) {
+    return ALLOWED_TYPES[type] || '📎';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function createFilePreview(file) {
+    const preview = document.createElement('div');
+    preview.className = 'file-preview';
+    
+    const icon = document.createElement('span');
+    icon.className = 'file-icon';
+    icon.textContent = getFileIcon(file.type);
+    
+    const info = document.createElement('div');
+    info.className = 'file-info';
+    
+    const name = document.createElement('div');
+    name.className = 'file-name';
+    name.textContent = file.name;
+    
+    const size = document.createElement('div');
+    size.className = 'file-size';
+    size.textContent = formatFileSize(file.size);
+    
+    info.appendChild(name);
+    info.appendChild(size);
+    preview.appendChild(icon);
+    preview.appendChild(info);
+    
+    return preview;
+}
+
+function showNotification(message, type = 'info') {
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
+
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+async function handleFileUpload(file) {
+    if (file.size > MAX_FILE_SIZE) {
+        showNotification('File size exceeds 500MB limit', 'error');
+        return;
+    }
+    
+    if (!ALLOWED_TYPES[file.type]) {
+        showNotification('File type not supported', 'error');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('username', username);
+        
+        showNotification('Uploading file...');
+        
+        const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error('Upload failed');
+        }
+        
+        const data = await response.json();
+        
+        showNotification('File uploaded successfully');
+        
+        
+        
+    } catch (error) {
+        console.error('Upload error:', error);
+        showNotification('Failed to upload file', 'error');
+    }
+}
+
+uploadButton.addEventListener('click', () => {
+    fileInput.click();
+});
+
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        handleFileUpload(file);
+    }
+    fileInput.value = '';
+});
+
+function appendMessage(message, isSent = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+    messageDiv.dataset.messageId = message.id || Date.now().toString();
+
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+
+    const usernameDiv = document.createElement('div');
+    usernameDiv.className = 'username';
+    usernameDiv.textContent = message.username || username;
+    messageContent.appendChild(usernameDiv);
+
+    if (message.type === 'file') {
+        const filePreview = createFilePreview({
+            name: message.fileName,
+            type: message.fileType,
+            size: message.fileSize
+        });
+        
+        const link = document.createElement('a');
+        link.href = message.fileUrl;
+        link.className = 'file-link';
+        link.download = message.fileName;
+        link.appendChild(filePreview);
+        
+        messageContent.appendChild(link);
+    } else {
+        const messageText = document.createElement('div');
+        messageText.className = 'message-text';
+        messageText.textContent = message.text || message.message;
+        messageContent.appendChild(messageText);
+    }
+
+    const timestampDiv = document.createElement('div');
+    timestampDiv.className = 'timestamp';
+    timestampDiv.textContent = new Date(message.timestamp).toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit'
+    });
+    messageContent.appendChild(timestampDiv);
+
+    const statusIcon = document.createElement('span');
+    statusIcon.className = 'message-status';
+    messageContent.appendChild(statusIcon);
+
+    if (message.status) {
+        updateMessageStatusIcon(statusIcon, message.status);
+    } else if (isSent) {
+        updateMessageStatusIcon(statusIcon, 'sent');
+    }
+
+    if (isSent) {
+        const moreMenuWrapper = document.createElement('div');
+        moreMenuWrapper.className = 'message-more-menu-wrapper';
+        
+        const moreBtn = document.createElement('button');
+        moreBtn.className = 'message-more-btn';
+        moreBtn.innerHTML = '⋮';
+        moreBtn.onclick = (e) => {
+            e.stopPropagation();
+            const dropdown = messageDiv.querySelector('.message-more-dropdown');
+            if (dropdown) {
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            }
+        };
+        
+        const dropdown = document.createElement('div');
+        dropdown.className = 'message-more-dropdown';
+        
+        const editOption = document.createElement('button');
+        editOption.className = 'message-more-option';
+        editOption.innerHTML = '<span class="option-icon">✏️</span> Edit';
+        editOption.onclick = () => {
+            enableMessageEditing(messageDiv, message);
+            dropdown.style.display = 'none';
+        };
+        
+        const deleteOption = document.createElement('button');
+        deleteOption.className = 'message-more-option';
+        deleteOption.innerHTML = '<span class="option-icon">🗑️</span> Delete';
+        deleteOption.onclick = () => {
+            socket.emit('delete message', { messageId: message.id });
+            dropdown.style.display = 'none';
+        };
+        
+        dropdown.appendChild(editOption);
+        dropdown.appendChild(deleteOption);
+        moreMenuWrapper.appendChild(moreBtn);
+        moreMenuWrapper.appendChild(dropdown);
+        messageContent.appendChild(moreMenuWrapper);
+    }
+
+     if (message.type !== 'file') {
+        messageContent.addEventListener('click', (e) => {
+             if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A' || e.target.closest('a')) {
+                return;
+            }
+            showReactionPicker(e, message.id);
+        });
+     } else {
+          const filePreviewElement = messageContent.querySelector('.file-preview');
+          if(filePreviewElement) {
+               filePreviewElement.addEventListener('click', (e) => {
+                     if (e.target.tagName === 'A' || e.target.closest('a')) {
+                        return;
+                    }
+                   showReactionPicker(e, message.id);
+               });
+          }
+     }
+
+
+    messageDiv.appendChild(messageContent);
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    if (!isSent && message.id) {
+        messageObserver.observe(messageDiv);
+    }
+}

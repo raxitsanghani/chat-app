@@ -28,6 +28,8 @@
             <div class="messages-container" id="messages"></div>
             
             <div class="message-input-container">
+                <input type="file" id="file-input" class="file-input" accept="image/*,.zip,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
+                <button id="upload-button" class="upload-button" title="Upload File">📎</button>
                 <input 
                     type="text" 
                     id="message-input" 
@@ -35,8 +37,6 @@
                     placeholder="Type your message..."
                     autocomplete="off"
                 >
-                <input type="file" id="file-input" style="display: none;" />
-                <button id="upload-button" class="upload-button" title="Upload File">📎</button>
                 <button id="emoji-button" class="emoji-button" title="Choose Emoji">😊</button>
                 <button id="send-button" class="send-button">Send</button>
             </div>

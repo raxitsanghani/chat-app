@@ -580,6 +580,11 @@ body {
     z-index: 1000;
 }
 
+:root.dark-mode .reaction-picker {
+    background: #222e35;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
 .reaction-picker button {
     background: none;
     border: none;
@@ -603,7 +608,7 @@ body {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.message-reactions {
+.reactions-container {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -617,23 +622,14 @@ body {
     padding: 0;
 }
 
-.message.sent .message-reactions {
+.message.sent .reactions-container {
     right: auto;
     left: 8px;
 }
 
-.message.received .message-reactions {
+.message.received .reactions-container {
     left: 8px;
     right: auto;
-}
-
-.message-reactions::-webkit-scrollbar {
-    display: none;
-}
-
-.message-reactions {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
 }
 
 .reaction {
@@ -653,7 +649,7 @@ body {
 }
 
 :root.dark-mode .reaction {
-     background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 :root.dark-mode .reaction:hover {
@@ -666,8 +662,8 @@ body {
 }
 
 :root.dark-mode .reaction.active {
-     background-color: #555;
-     color: white;
+    background-color: #555;
+    color: white;
 }
 
 .emoji-picker {
@@ -870,7 +866,6 @@ body {
 }
 
 .send-button,
-.upload-button,
 .emoji-button {
     padding: 12px 20px;
     background: #2196f3;
@@ -888,14 +883,12 @@ body {
 }
 
 .send-button:hover,
-.upload-button:hover,
 .emoji-button:hover {
     background: #2196f3;
     transform: translateY(-1px);
 }
 
 .send-button:active,
-.upload-button:active,
 .emoji-button:active {
     transform: translateY(0);
 }
@@ -904,229 +897,133 @@ body {
     display: none;
 }
 
-.emoji-picker {
-    position: fixed;
-    background: #eee;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    padding: 15px;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 10px;
-    max-height: 250px;
-    overflow-y: auto;
-    box-shadow: 0 2px 8px #333;
-    z-index: 1001;
-    min-width: 300px;
-}
-
-.emoji-picker-button {
-    background: none;
+.upload-button {
+    padding: 12px 20px;
+    background: #2196f3;
+    color: #fff;
     border: none;
-    cursor: pointer;
-    font-size: 2em;
-    padding: 0;
-    margin: 0;
     border-radius: 8px;
-    transition: background-color 0.2s;
-    width: 45px;
-    height: 45px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    line-height: 1;
-}
-
-.emoji-picker-button:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-:root.dark-mode .emoji-picker-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.message-actions {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    gap: 8px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.message:hover .message-actions {
-    opacity: 1;
-}
-
-.action-button {
-    background: none;
-    border: none;
     cursor: pointer;
-    padding: 4px;
-    border-radius: 50%;
+    font-size: 16px;
+    min-width: 50px;
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-.action-button:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+.upload-button:hover {
+    background: #1976d2;
+    transform: translateY(-1px);
 }
 
-.reaction-picker {
-    position: absolute;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    padding: 8px;
+.upload-button:active {
+    transform: translateY(0);
+}
+
+.file-preview {
     display: flex;
-    gap: 8px;
-    z-index: 1000;
-}
-
-.reaction-button {
-    font-size: 1.5em;
-    padding: 4px;
-    cursor: pointer;
-    border: none;
-    background: none;
-    transition: transform 0.2s ease;
-}
-
-.reaction-button:hover {
-    transform: scale(1.2);
-}
-
-.message-reactions {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 4px;
-    position: absolute;
-    bottom: 4px;
-    left: 8px;
-    z-index: 1;
-    flex-shrink: 0;
-    overflow-x: visible;
-    padding: 0;
-}
-
-.message.sent .message-reactions {
-    right: auto;
-    left: 8px;
-}
-
-.message.received .message-reactions {
-    left: 8px;
-    right: auto;
-}
-
-.message-reactions::-webkit-scrollbar {
-    display: none;
-}
-
-.message-reactions {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.reaction {
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
     background: rgba(0, 0, 0, 0.05);
-    border-radius: 12px;
-    padding: 2px 6px;
-    font-size: 0.9em;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
+    border-radius: 8px;
     transition: background-color 0.2s ease;
-}
-
-.reaction:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-}
-
-:root.dark-mode .reaction {
-     background: rgba(255, 255, 255, 0.1);
-}
-
-:root.dark-mode .reaction:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-.reaction.active {
-    background-color: #555;
-    color: white;
-}
-
-:root.dark-mode .reaction.active {
-     background-color: #555;
-     color: white;
-}
-
-.message-edit-input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    color: #555;
-    margin-bottom: 8px;
-}
-
-.edit-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-}
-
-.edit-button, .cancel-button {
-    padding: 4px 12px;
-    border: none;
-    color: #555;
     cursor: pointer;
-    font-size: 0.9em;
+    max-width: 300px;
 }
 
-.edit-button {
-    background-color: #25D366;
-    color: white;
-}
-
-.cancel-button {
-    background-color: #f0f0f0;
-    color: #333;
-}
-
-.dark-mode .reaction-picker {
-    background: #2a2a2a;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-}
-
-.dark-mode .action-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.dark-mode .reaction {
+:root.dark-mode .file-preview {
     background: rgba(255, 255, 255, 0.1);
 }
 
-.dark-mode .message-edit-input {
-    background: #2a2a2a;
-    border-color: #444;
-    color: white;
+.file-preview:hover {
+    background: rgba(0, 0, 0, 0.1);
 }
 
-.dark-mode .cancel-button {
-    background-color: #444;
-    color: #fff;
+:root.dark-mode .file-preview:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.file-icon {
+    font-size: 1.8em;
+    min-width: 32px;
+    text-align: center;
+}
+
+.file-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.file-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-size {
+    font-size: 0.85em;
+    color: var(--timestamp-color);
+}
+
+.message-image {
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.message-image:hover {
+    transform: scale(1.02);
+}
+
+.file-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    width: 100%;
+}
+
+.file-link:hover {
+    text-decoration: none;
+}
+
+.notification {
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin: 10px auto;
+    max-width: 80%;
+    text-align: center;
+    animation: fadeInOut 3s ease-in-out;
+    z-index: 1000;
+}
+
+.notification.error {
+    background-color: #e53935;
+}
+
+:root.dark-mode .notification {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #111b21;
+}
+
+:root.dark-mode .notification.error {
+    background-color: #e53935;
+    color: white;
 }
 
 .message-more-menu-wrapper {
     position: absolute;
     top: 8px;
-    right: 12px;
+    right: 8px;
     z-index: 10;
 }
 
