@@ -188,12 +188,27 @@ body {
 .btn-join {
     width: 100%;
     padding: 12px;
-    background-color: #1a73e8;
+    background-color: transparent;
+    box-shadow: 1px 1px 1px 1px;
+    border-radius: 5px;
     color: white;
     border: none;
     color: #060606;
     font-size: 16px;
     cursor: pointer;
+}
+.btn-join:hover {
+animation: zoomIn 0.5s ease-in backwards;
+}
+@keyframes zoomIn {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 :root.dark-mode .btn-join {
@@ -301,7 +316,7 @@ body {
 
 .chat-header {
     padding: 20px;
-    background: #1a73e8;
+    background: #112d50;
     color: white;
     display: flex;
     justify-content: space-between;
