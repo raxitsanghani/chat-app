@@ -68,22 +68,30 @@ module.exports = (io, onlineUsers, User) => {
           file: msgData.file,
           timestamp: msgData.timestamp || new Date().toISOString(),
           reactions: msgData.reactions || [],
-          status: 'sent', 
-          senderSocketId: socket.id 
+          status: 'sent',
+          senderSocketId: socket.id
         };
 
-        messages.set(messageId, messageToSend); 
+        if (msgData.replyTo) {
+          messageToSend.replyTo = {
+            id: msgData.replyTo.id,
+            username: msgData.replyTo.username,
+            message: msgData.replyTo.message
+          };
+        }
+
+        messages.set(messageId, messageToSend);
 
         if (messageToSend.reactions && Array.isArray(messageToSend.reactions)) {
-            if (!messageReactions.has(messageId)) {
-              messageReactions.set(messageId, new Map());
-            }
-            messageToSend.reactions.forEach(r => {
-              if (r.emoji && Array.isArray(r.users)) {
-                messageReactions.get(messageId).set(r.emoji, new Set(r.users));
-              }
-            });
+          if (!messageReactions.has(messageId)) {
+            messageReactions.set(messageId, new Map());
           }
+          messageToSend.reactions.forEach(r => {
+            if (r.emoji && Array.isArray(r.users)) {
+              messageReactions.get(messageId).set(r.emoji, new Set(r.users));
+            }
+          });
+        }
 
         io.to(currentRoom).emit("chat message", messageToSend);
 

@@ -18,7 +18,6 @@ document.getElementById('joinForm').addEventListener('submit', function(e) {
     }
 });
 
-// Add dark mode toggle functionality
 const modeSwitchButton = document.getElementById('mode-switch-button');
 
 function setTheme(theme) {
@@ -40,7 +39,6 @@ function setTheme(theme) {
     }
 }
 
-// Apply saved theme or default to system preference
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme) {
     setTheme(savedTheme);
@@ -50,7 +48,6 @@ if (savedTheme) {
     setTheme('light');
 }
 
-// Add event listener to the mode switch button
 if (modeSwitchButton) {
     modeSwitchButton.addEventListener('click', () => {
         const currentTheme = localStorage.getItem('theme') || 'light';

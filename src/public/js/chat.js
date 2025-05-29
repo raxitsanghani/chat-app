@@ -15,8 +15,10 @@ const messageInput = document.getElementById('message-input');
 const sendButton = document.getElementById('send-button');
 const usersList = document.getElementById('users-list');
 const modeSwitchButton = document.getElementById('mode-switch-button');
+const replyPreview = document.getElementById('reply-preview');
 let typingTimeout;
 let isTyping = false;
+let replyingTo = null;
 
 const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '👏'];
 
@@ -355,13 +357,24 @@ function sendMessage() {
     const message = messageInput.value.trim();
     if (message) {
         const messageId = Date.now().toString();
-        socket.emit('chat message', {
+        const messageData = {
             id: messageId,
             username,
             message,
             timestamp: new Date().toISOString(),
             status: 'sent'
-        });
+        };
+
+        if (replyingTo) {
+            messageData.replyTo = {
+                id: replyingTo.id,
+                username: replyingTo.username,
+                message: replyingTo.message || replyingTo.text
+            };
+            clearReplyTo();
+        }
+
+        socket.emit('chat message', messageData);
         messageInput.value = '';
         socket.emit('stop typing');
     }
@@ -408,7 +421,7 @@ function updateMessageStatusIcon(iconElement, status) {
     } else if (status === 'seen') {
         iconElement.innerHTML = '✓✓';
         iconElement.title = 'Seen';
-        iconElement.style.color = 'var(--primary-color)';
+        iconElement.style.color = '#4a90e2';
     }
 }
 
@@ -556,6 +569,30 @@ function appendMessage(message, isSent = false) {
     usernameDiv.textContent = message.username || username;
     messageContent.appendChild(usernameDiv);
 
+    if (message.replyTo) {
+        const replyDiv = document.createElement('div');
+        replyDiv.className = 'message-reply';
+        const replyUsername = document.createElement('div');
+        replyUsername.className = 'username';
+        replyUsername.textContent = message.replyTo.username;
+        const replyText = document.createElement('div');
+        replyText.className = 'message-text';
+        replyText.textContent = message.replyTo.message;
+        
+        replyDiv.addEventListener('click', () => {
+            const originalMessage = document.querySelector(`[data-message-id="${message.replyTo.id}"]`);
+            if (originalMessage) {
+                originalMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                originalMessage.style.animation = 'highlight-message 2s ease-out';
+            }
+        });
+        
+        replyDiv.appendChild(replyUsername);
+        replyDiv.appendChild(replyText);
+        
+        messageContent.appendChild(replyDiv);
+    }
+
     if (message.type === 'file') {
         const filePreview = createFilePreview({
             name: message.fileName,
@@ -595,24 +632,34 @@ function appendMessage(message, isSent = false) {
         updateMessageStatusIcon(statusIcon, 'sent');
     }
 
+    const moreMenuWrapper = document.createElement('div');
+    moreMenuWrapper.className = 'message-more-menu-wrapper';
+    
+    const moreBtn = document.createElement('button');
+    moreBtn.className = 'message-more-btn';
+    moreBtn.innerHTML = '⋮';
+    moreBtn.onclick = (e) => {
+        e.stopPropagation();
+        const dropdown = messageDiv.querySelector('.message-more-dropdown');
+        if (dropdown) {
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+    };
+    
+    const dropdown = document.createElement('div');
+    dropdown.className = 'message-more-dropdown';
+    
+    const replyOption = document.createElement('button');
+    replyOption.className = 'message-more-option reply-option';
+    replyOption.innerHTML = '<span class="option-icon">↩️</span> Reply';
+    replyOption.onclick = () => {
+        setReplyTo(message);
+        dropdown.style.display = 'none';
+    };
+    
+    dropdown.appendChild(replyOption);
+
     if (isSent) {
-        const moreMenuWrapper = document.createElement('div');
-        moreMenuWrapper.className = 'message-more-menu-wrapper';
-        
-        const moreBtn = document.createElement('button');
-        moreBtn.className = 'message-more-btn';
-        moreBtn.innerHTML = '⋮';
-        moreBtn.onclick = (e) => {
-            e.stopPropagation();
-            const dropdown = messageDiv.querySelector('.message-more-dropdown');
-            if (dropdown) {
-                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-            }
-        };
-        
-        const dropdown = document.createElement('div');
-        dropdown.className = 'message-more-dropdown';
-        
         const editOption = document.createElement('button');
         editOption.className = 'message-more-option';
         editOption.innerHTML = '<span class="option-icon">✏️</span> Edit';
@@ -631,19 +678,20 @@ function appendMessage(message, isSent = false) {
         
         dropdown.appendChild(editOption);
         dropdown.appendChild(deleteOption);
-        moreMenuWrapper.appendChild(moreBtn);
-        moreMenuWrapper.appendChild(dropdown);
-        messageContent.appendChild(moreMenuWrapper);
     }
+    
+    moreMenuWrapper.appendChild(moreBtn);
+    moreMenuWrapper.appendChild(dropdown);
+    messageContent.appendChild(moreMenuWrapper);
 
-     if (message.type !== 'file') {
+    if (message.type !== 'file') {
         messageContent.addEventListener('click', (e) => {
              if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A' || e.target.closest('a')) {
                 return;
             }
             showReactionPicker(e, message.id);
         });
-     } else {
+    } else {
           const filePreviewElement = messageContent.querySelector('.file-preview');
           if(filePreviewElement) {
                filePreviewElement.addEventListener('click', (e) => {
@@ -653,8 +701,7 @@ function appendMessage(message, isSent = false) {
                    showReactionPicker(e, message.id);
                });
           }
-     }
-
+    }
 
     messageDiv.appendChild(messageContent);
     messagesContainer.appendChild(messageDiv);
@@ -664,3 +711,20 @@ function appendMessage(message, isSent = false) {
         messageObserver.observe(messageDiv);
     }
 }
+
+function setReplyTo(message) {
+    replyingTo = message;
+    const usernameDiv = replyPreview.querySelector('.reply-preview-username');
+    const textDiv = replyPreview.querySelector('.reply-preview-text');
+    usernameDiv.textContent = message.username;
+    textDiv.textContent = message.message || message.text;
+    replyPreview.style.display = 'flex';
+    messageInput.focus();
+}
+
+function clearReplyTo() {
+    replyingTo = null;
+    replyPreview.style.display = 'none';
+}
+
+replyPreview.querySelector('.reply-preview-close').addEventListener('click', clearReplyTo);
