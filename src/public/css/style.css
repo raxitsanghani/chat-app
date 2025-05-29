@@ -5,7 +5,7 @@
     --text-color: #2c3e50;
     --error-color: #e74c3c;
     --success-color: #2ecc71;
-    color: #555;
+    --color: #555;
     --border-radius: 8px;
     --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     --bg-color: #f0f2f5;
@@ -34,7 +34,7 @@
     --text-color: #e9edef;
     --error-color: #e74c3c;
     --success-color: #2ecc71;
-    color: #555;
+    --color: #555;
     --border-radius: 8px;
     --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     --bg-color: #0b141a;
@@ -100,11 +100,37 @@ body {
     padding: 30px;
     color: #555;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 2px solid red;
+    position: relative;
+    overflow: hidden;
+    animation: red-border-glow 1.5s ease-in-out infinite alternate;
 }
 
 :root.dark-mode .welcome-card {
     background: #1f2c34;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border-color: red;
+}
+
+.welcome-card::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(to bottom right, transparent, rgba(255, 255, 255, 0.8), transparent);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+    animation: border-light-sweep 8s linear infinite;
+    z-index: 1;
+}
+
+@keyframes border-light-sweep {
+    0% { top: -10px; left: -10px; transform: rotate(0deg); }
+    25% { top: -10px; left: calc(100% - 10px); transform: rotate(90deg); }
+    50% { top: calc(100% - 10px); left: calc(100% - 10px); transform: rotate(180deg); }
+    75% { top: calc(100% - 10px); left: -10px; transform: rotate(270deg); }
+    100% { top: -10px; left: -10px; transform: rotate(360deg); }
 }
 
 .welcome-card h1 {
@@ -177,7 +203,7 @@ body {
 .form-text {
     display: block;
     margin-top: 5px;
-    color: #666;
+    color: red;
     font-size: 12px;
 }
 
@@ -248,6 +274,7 @@ animation: zoomIn 0.5s ease-in backwards;
     border-right: 1px solid #ddd;
     color: #111b21;
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    
 }
 
 :root.dark-mode .users-sidebar {
@@ -266,7 +293,7 @@ animation: zoomIn 0.5s ease-in backwards;
 }
 
 .users-list {
-    list-style: none;
+   
     padding: 0;
     margin: 0;
     max-height: 200px;
@@ -276,8 +303,19 @@ animation: zoomIn 0.5s ease-in backwards;
 .users-list li {
     padding: 8px 12px;
     border-bottom: 1px solid #eee;
-    color: #333;
+   
     transition: background-color 0.2s ease;
+}
+#users-list li {
+     color: green;
+     font-size: 20px;
+     font-weight: 700;
+     margin-left: 20px;
+}
+
+#users-list li::marker {
+    color: green;
+
 }
 
 .users-list li:last-child {
@@ -322,6 +360,7 @@ animation: zoomIn 0.5s ease-in backwards;
     justify-content: space-between;
     align-items: center;
     transition: background-color 0.3s ease, color 0.3s ease;
+
 }
 
 .header-left {
@@ -356,6 +395,7 @@ animation: zoomIn 0.5s ease-in backwards;
     border: none;
     cursor: pointer;
     font-weight: bold;
+    margin-left: 10px;
 }
 
 :root.dark-mode .btn-exit {
@@ -783,14 +823,18 @@ animation: zoomIn 0.5s ease-in backwards;
 
 .mode-switch-button {
     background: transparent;
-    box-shadow: 1px 1px 1px 1px;
-    color: white;
+    border: none;
+    color: #019fef;
     font-size: 1rem;
     cursor: pointer;
-    margin-left: 10px;
+    margin-left: 860px;
     padding: 8px 12px;
     border-radius: 8px;
-    transition: opacity 0.3s ease, background-color 0.3s ease;
+    transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    top: 10px;
+    right: 10px;
+    z-index: 40;
+    box-shadow: 1px 1px 1px 1px rgb(0, 67, 155);
 }
 
 :root.dark-mode .mode-switch-button {
@@ -799,11 +843,11 @@ animation: zoomIn 0.5s ease-in backwards;
 
 .mode-switch-button:hover {
     opacity: 0.8;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 :root.dark-mode .mode-switch-button:hover {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .delete-button {
@@ -1141,7 +1185,7 @@ animation: zoomIn 0.5s ease-in backwards;
 }
 
 .private-room-link {
-    color: #555;
+    color: #0000ff;
     text-decoration: none;
     display: block;
     margin-bottom: 10px;
@@ -1149,9 +1193,17 @@ animation: zoomIn 0.5s ease-in backwards;
     transition: color 0.2s ease;
 }
 
+:root.dark-mode .private-room-link {
+    color: #53bdeb;
+}
+
 .private-room-link:hover {
     color: #555;
     text-decoration: underline;
+}
+
+:root.dark-mode .private-room-link:hover {
+    color: #8696a0;
 }
 
 .private-room-form {
@@ -1159,6 +1211,11 @@ animation: zoomIn 0.5s ease-in backwards;
     padding: 10px;
     border: 1px solid #555;
     color: #555;
+}
+
+:root.dark-mode .private-room-form {
+    border-color: #54656f;
+    color: #e9edef;
 }
 
 .message.received .message-status {
