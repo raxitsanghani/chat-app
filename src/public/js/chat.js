@@ -285,6 +285,12 @@ socket.on('notification', (message) => {
     notification.textContent = message;
     messagesContainer.appendChild(notification);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    setTimeout(() => {
+        if (notification && notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
 });
 
 socket.on('typing', (username) => {
@@ -744,7 +750,11 @@ socket.on('system notification', ({ type, content, timestamp }) => {
     
     const timeSpan = document.createElement('span');
     timeSpan.className = 'notification-time';
-    timeSpan.textContent = new Date(timestamp).toLocaleTimeString();
+    timeSpan.textContent = new Date(timestamp).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
     
     notificationDiv.appendChild(contentSpan);
     notificationDiv.appendChild(timeSpan);
