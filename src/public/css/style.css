@@ -371,7 +371,7 @@ animation: zoomIn 0.5s ease-in backwards;
 
 .room-id {
     font-size: 0.9em;
-    color: #111b21;
+    color: #0084ff;
     opacity: 0.8;
 }
 
@@ -379,6 +379,10 @@ animation: zoomIn 0.5s ease-in backwards;
     background: #242526;
     border-bottom: 1px solid #3a3b3c;
     color: #e4e6eb;
+}
+
+:root.dark-mode .room-id {
+    color: #0084ff;
 }
 
 .btn-exit {
@@ -522,12 +526,10 @@ animation: zoomIn 0.5s ease-in backwards;
     margin-left: 4px;
     display: inline-flex;
     align-items: center;
-    font-weight: 600;
 }
 
 :root.dark-mode .message-status {
     color: #ffffff;
-    font-weight: 600;
 }
 
 .message.sent .message-status {
