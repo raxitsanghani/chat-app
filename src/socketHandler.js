@@ -284,9 +284,21 @@ module.exports = (io, onlineUsers, User) => {
     socket.on('delete message', ({ messageId }) => {
       try {
         console.log(`Deleting message with ID: ${messageId}`);
+        const message = messages.get(messageId);
+        if (!message) {
+          throw new Error('Message not found');
+        }
+        
         messages.delete(messageId);
         messageReactions.delete(messageId); 
+        
         io.to(currentRoom).emit('message deleted', { messageId }); 
+        
+        io.to(currentRoom).emit('system notification', {
+          type: 'deletion',
+          content: `${currentUser} deleted a message`,
+          timestamp: new Date().toISOString()
+        });
       } catch (error) {
         console.error("Error in delete message:", error);
         socket.emit('error', 'Failed to delete message');

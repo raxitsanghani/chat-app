@@ -42,8 +42,8 @@ const ALLOWED_TYPES = {
     'image/png': '🖼️',
     'image/gif': '🖼️',
     'image/webp': '🖼️',
-    'application/zip': '📦',
-    'application/x-zip-compressed': '📦',
+    'application/zip': '📁',
+    'application/x-zip-compressed': '📁',
     'application/pdf': '📄',
     'text/plain': '📝',
     'application/msword': '📄',
@@ -445,7 +445,11 @@ socket.on('message_status_update', ({ messageId, status, seenTime }) => {
         if (statusIcon) {
             updateMessageStatusIcon(statusIcon, status);
             if (status === 'seen' && seenTime && timestampDiv) {
-                timestampDiv.textContent += ` Seen ${new Date(seenTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                timestampDiv.textContent += ` Seen ${new Date(seenTime).toLocaleTimeString('en-US', { 
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true 
+                })}`;
                 timestampDiv.classList.add('seen-time');
             }
         }
@@ -616,9 +620,10 @@ function appendMessage(message, isSent = false) {
 
     const timestampDiv = document.createElement('div');
     timestampDiv.className = 'timestamp';
-    timestampDiv.textContent = new Date(message.timestamp).toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit'
+    timestampDiv.textContent = new Date(message.timestamp).toLocaleTimeString('en-US', { 
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true 
     });
     messageContent.appendChild(timestampDiv);
 
@@ -728,3 +733,32 @@ function clearReplyTo() {
 }
 
 replyPreview.querySelector('.reply-preview-close').addEventListener('click', clearReplyTo);
+
+socket.on('system notification', ({ type, content, timestamp }) => {
+    const notificationDiv = document.createElement('div');
+    notificationDiv.className = `system-notification ${type}`;
+    
+    const contentSpan = document.createElement('span');
+    contentSpan.className = 'notification-content';
+    contentSpan.textContent = content;
+    
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'notification-time';
+    timeSpan.textContent = new Date(timestamp).toLocaleTimeString();
+    
+    notificationDiv.appendChild(contentSpan);
+    notificationDiv.appendChild(timeSpan);
+    
+    messagesContainer.appendChild(notificationDiv);
+    notificationDiv.scrollIntoView({ behavior: 'smooth' });
+    
+    setTimeout(() => {
+        if (notificationDiv && notificationDiv.parentNode) {
+            notificationDiv.remove();
+        }
+    }, 5000);
+});
+
+const notificationStyles = document.createElement('style');
+
+document.head.appendChild(notificationStyles);
