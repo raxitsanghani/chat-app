@@ -294,7 +294,32 @@ animation: zoomIn 0.5s ease-in backwards;
 }
 
 :root.dark-mode .users-sidebar h2 {
-    color: #e9edef;
+    color: #ffffff;
+    text-shadow: 
+        0 0 5px #fff,
+        0 0 10px #fff,
+        0 0 15px #0084ff,
+        0 0 20px #0084ff,
+        0 0 25px #0084ff;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 
+            0 0 5px #fff,
+            0 0 10px #fff,
+            0 0 15px #0084ff,
+            0 0 20px #0084ff;
+    }
+    to {
+        text-shadow: 
+            0 0 10px #fff,
+            0 0 20px #fff,
+            0 0 30px #0084ff,
+            0 0 40px #0084ff,
+            0 0 50px #0084ff;
+    }
 }
 
 .users-list {
@@ -383,6 +408,29 @@ animation: zoomIn 0.5s ease-in backwards;
 
 :root.dark-mode .room-id {
     color: #0084ff;
+    opacity: 1;
+    text-shadow: 
+        0 0 5px #0084ff,
+        0 0 10px #0084ff,
+        0 0 15px #0084ff,
+        0 0 20px #0084ff;
+    animation: blueGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes blueGlow {
+    from {
+        text-shadow: 
+            0 0 5px #0084ff,
+            0 0 10px #0084ff,
+            0 0 15px #0084ff;
+    }
+    to {
+        text-shadow: 
+            0 0 10px #0084ff,
+            0 0 20px #0084ff,
+            0 0 30px #0084ff,
+            0 0 40px #0084ff;
+    }
 }
 
 .btn-exit {
@@ -1557,4 +1605,39 @@ animation: zoomIn 0.5s ease-in backwards;
 
 .message.received .reply-preview-content {
     text-align: left;
+}
+
+.chat-header h2 {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+:root.dark-mode .chat-header h2 {
+    color: #ffffff;
+    text-shadow: 
+        0 0 5px #fff,
+        0 0 10px #fff,
+        0 0 15px #0084ff,
+        0 0 20px #0084ff,
+        0 0 25px #0084ff;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 
+            0 0 5px #fff,
+            0 0 10px #fff,
+            0 0 15px #0084ff,
+            0 0 20px #0084ff;
+    }
+    to {
+        text-shadow: 
+            0 0 10px #fff,
+            0 0 20px #fff,
+            0 0 30px #0084ff,
+            0 0 40px #0084ff,
+            0 0 50px #0084ff;
+    }
 }
