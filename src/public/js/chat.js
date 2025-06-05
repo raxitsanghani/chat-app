@@ -172,6 +172,39 @@ socket.on('connect', () => {
     }
 });
 
+socket.on('users update', (users) => {
+    usersList.innerHTML = '';
+    users.forEach(user => {
+        const li = document.createElement('li');
+        li.textContent = user.username;
+        if (user.online) {
+            li.classList.add('online');
+        }
+        if (user.username === username) {
+            li.classList.add('current-user');
+        }
+        usersList.appendChild(li);
+    });
+});
+
+socket.on('user joined', (data) => {
+    showNotification(`${data.username} joined the chat`);
+    const userElement = Array.from(usersList.children)
+        .find(li => li.textContent === data.username);
+    if (userElement) {
+        userElement.classList.add('online');
+    }
+});
+
+socket.on('user left', (data) => {
+    showNotification(`${data.username} left the chat`);
+    const userElement = Array.from(usersList.children)
+        .find(li => li.textContent === data.username);
+    if (userElement) {
+        userElement.classList.remove('online');
+    }
+});
+
 socket.on('connect_error', (error) => {
     console.error('Connection error:', error);
 });
