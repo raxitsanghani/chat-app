@@ -427,18 +427,20 @@ body {
 }
 
 @keyframes redGlow {
-    from {
-        text-shadow: 
-            0 0 5px #ff0000,
-            0 0 10px #ff0000,
-            0 0 15px #ff0000;
+    0% {
+        box-shadow: 0 0 5px #ff0000,
+                   0 0 15px #ff0000,
+                   0 0 25px #ff0000;
     }
-    to {
-        text-shadow: 
-            0 0 10px #ff0000,
-            0 0 20px #ff0000,
-            0 0 30px #ff0000,
-            0 0 40px #ff0000;
+    50% {
+        box-shadow: 0 0 10px #ff0000,
+                   0 0 20px #ff0000,
+                   0 0 30px #ff0000;
+    }
+    100% {
+        box-shadow: 0 0 5px #ff0000,
+                   0 0 15px #ff0000,
+                   0 0 25px #ff0000;
     }
 }
 
@@ -558,13 +560,12 @@ body {
 .btn-exit {
     padding: 8px 16px;
     background: transparent;
-    border: none;
-    border-radius: 8px;
-    color: rgb(17, 1, 1);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
     cursor: pointer;
     font-weight: 500;
-    transition: all 0.2s ease;
-    font-size: 0.9em;
+    transition: all 0.3s ease;
+    font-size: 1rem;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1101,8 +1102,8 @@ body {
     font-size: 1.2em;
     padding: 4px;
     cursor: pointer;
-    color: #000000;
-    opacity: 0;
+    color: var(--text-color);
+    opacity: 0.7;
     transition: all 0.2s ease;
     border-radius: 50%;
     width: 28px;
@@ -1112,8 +1113,17 @@ body {
     justify-content: center;
 }
 
-.message-content:hover .message-more-btn {
+.message-more-btn:hover {
     opacity: 1;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+:root.dark-mode .message-more-btn {
+    color: #e4e6eb;
+}
+
+:root.dark-mode .message-more-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .message-more-dropdown {
@@ -1211,38 +1221,54 @@ body {
     100% { opacity: 0; transform: translateY(-10px); }
 }
 
-.mode-switch-button {
-    position: fixed;
-    top: 20px;
-    right: 20px;
+.mode-switch-button, .btn-exit {
     background: transparent;
-    border: none;
-    color: #050505;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
     font-size: 1rem;
     cursor: pointer;
-    padding: 8px 12px;
+    padding: 8px 16px;
     border-radius: 8px;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 1px 1px 1px 1px;
+}
+
+.mode-switch-button:hover, .btn-exit:hover {
+    background-color: rgba(255, 0, 0, 0.1);
+    transform: translateY(-2px);
+    animation: redGlow 2s infinite;
+    color: #ff0000;
+}
+
+:root.dark-mode .mode-switch-button,
+:root.dark-mode .btn-exit {
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+:root.dark-mode .mode-switch-button:hover,
+:root.dark-mode .btn-exit:hover {
+    background-color: rgba(255, 0, 0, 0.2);
+    animation: redGlow 2s infinite;
+    color: #ff0000;
+}
+
+/* Keep the fixed positioning for homepage mode switch button */
+body > .mode-switch-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
     z-index: 1000;
 }
 
-:root.dark-mode .mode-switch-button {
-    color: #ff0000;
-    box-shadow: 1px 1px 1px 1px;
-}
-
-.mode-switch-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 2px 2px 2px 2px;
-}
-
-:root.dark-mode .mode-switch-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 2px 2px 2px 2px;
+/* Keep the static positioning for chat header buttons */
+.header-right .mode-switch-button {
+    position: static;
+    top: auto;
+    right: auto;
+    z-index: auto;
 }
 
 .delete-button {
@@ -1466,8 +1492,8 @@ body {
     font-size: 1.2em;
     padding: 4px;
     cursor: pointer;
-    color: #000000;
-    opacity: 0;
+    color: var(--text-color);
+    opacity: 0.7;
     transition: all 0.2s ease;
     border-radius: 50%;
     width: 28px;
@@ -1477,8 +1503,17 @@ body {
     justify-content: center;
 }
 
-.message-content:hover .message-more-btn {
+.message-more-btn:hover {
     opacity: 1;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+:root.dark-mode .message-more-btn {
+    color: #e4e6eb;
+}
+
+:root.dark-mode .message-more-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .message-more-dropdown {
@@ -1773,5 +1808,28 @@ body {
             0 0 30px #0084ff,
             0 0 40px #0084ff,
             0 0 50px #0084ff;
+    }
+}
+
+@keyframes rgbGlow {
+    0% {
+        box-shadow: 0 0 5px #0084ff,
+                   0 0 15px #0084ff,
+                   0 0 25px #0084ff;
+    }
+    33% {
+        box-shadow: 0 0 5px #00ff84,
+                   0 0 15px #00ff84,
+                   0 0 25px #00ff84;
+    }
+    66% {
+        box-shadow: 0 0 5px #8400ff,
+                   0 0 15px #8400ff,
+                   0 0 25px #8400ff;
+    }
+    100% {
+        box-shadow: 0 0 5px #0084ff,
+                   0 0 15px #0084ff,
+                   0 0 25px #0084ff;
     }
 }
