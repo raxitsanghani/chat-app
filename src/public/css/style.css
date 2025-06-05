@@ -506,6 +506,14 @@ body {
     display: flex;
     align-items: center;
     gap: 16px;
+    flex-direction: row-reverse;
+}
+
+.header-right .mode-switch-button {
+    position: static;
+    top: auto;
+    right: auto;
+    z-index: auto;
 }
 
 .room-id {
@@ -1209,7 +1217,7 @@ body {
     right: 20px;
     background: transparent;
     border: none;
-    color: #ff0000;
+    color: #050505;
     font-size: 1rem;
     cursor: pointer;
     padding: 8px 12px;
