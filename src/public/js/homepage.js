@@ -26,14 +26,16 @@ function setTheme(theme) {
         htmlElement.classList.add('dark-mode');
         localStorage.setItem('theme', 'dark');
         if (modeSwitchButton) {
-            modeSwitchButton.textContent = '☀️ Light Mode';
+            const iconSpan = modeSwitchButton.querySelector('.icon');
+            if (iconSpan) iconSpan.textContent = '☀️';
             modeSwitchButton.title = 'Switch to Light Mode';
         }
     } else {
         htmlElement.classList.remove('dark-mode');
         localStorage.setItem('theme', 'light');
         if (modeSwitchButton) {
-            modeSwitchButton.textContent = '🌙 Dark Mode';
+            const iconSpan = modeSwitchButton.querySelector('.icon');
+            if (iconSpan) iconSpan.textContent = '🌙';
             modeSwitchButton.title = 'Switch to Dark Mode';
         }
     }
@@ -65,31 +67,23 @@ function setLayoutMode(mode) {
         document.body.classList.add('mobile-mode');
         localStorage.setItem('layoutMode', 'mobile');
         if (layoutSwitchButton) {
-            layoutSwitchButton.textContent = '💻 Desktop UI';
+            const iconSpan = layoutSwitchButton.querySelector('.icon');
+            if (iconSpan) iconSpan.textContent = '💻';
             layoutSwitchButton.title = 'Switch to Desktop UI';
         }
     } else {
         document.body.classList.remove('mobile-mode');
         localStorage.setItem('layoutMode', 'desktop');
         if (layoutSwitchButton) {
-            layoutSwitchButton.textContent = '📱 Mobile UI';
+            const iconSpan = layoutSwitchButton.querySelector('.icon');
+            if (iconSpan) iconSpan.textContent = '📱';
             layoutSwitchButton.title = 'Switch to Mobile UI';
         }
     }
 }
 
-// Add layout switch button
-let layoutSwitchButton = document.getElementById('layout-switch-button');
-if (!layoutSwitchButton) {
-    layoutSwitchButton = document.createElement('button');
-    layoutSwitchButton.id = 'layout-switch-button';
-    layoutSwitchButton.className = 'mode-switch-button';
-    // Insert after the theme switch button
-    const modeSwitchButton = document.getElementById('mode-switch-button');
-    if (modeSwitchButton && modeSwitchButton.parentNode) {
-        modeSwitchButton.parentNode.insertBefore(layoutSwitchButton, modeSwitchButton.nextSibling);
-    }
-}
+// Reference the layout switch button directly
+const layoutSwitchButton = document.getElementById('layout-switch-button');
 
 // Initial mode detection
 const savedLayoutMode = localStorage.getItem('layoutMode');
@@ -101,7 +95,9 @@ if (savedLayoutMode) {
     setLayoutMode('desktop');
 }
 
-layoutSwitchButton.addEventListener('click', () => {
-    const currentMode = document.body.classList.contains('mobile-mode') ? 'mobile' : 'desktop';
-    setLayoutMode(currentMode === 'mobile' ? 'desktop' : 'mobile');
-}); 
+if (layoutSwitchButton) {
+    layoutSwitchButton.addEventListener('click', () => {
+        const currentMode = document.body.classList.contains('mobile-mode') ? 'mobile' : 'desktop';
+        setLayoutMode(currentMode === 'mobile' ? 'desktop' : 'mobile');
+    });
+} 

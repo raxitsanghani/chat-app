@@ -21,9 +21,14 @@
                     <div id="room-id-display" class="room-id"></div>
                 </div>
                 <div class="header-right">
-                    <button id="exit-button" class="btn-exit">Exit Chat</button>
-                    <!-- Layout switch button will be injected here by JS -->
-                    <button id="mode-switch-button" class="mode-switch-button">Switch Mode</button>
+                    <button id="exit-button" class="btn-exit" title="Exit Chat">
+                        <span class="icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/><path d="M15 12H3"/></svg>
+                        </span>
+                    </button>
+                    <button id="mode-switch-button" class="mode-switch-button" title="Switch Mode">
+                        <span class="icon" id="mode-icon"></span>
+                    </button>
                 </div>
             </div>
             <div class="messages-container" id="messages"></div>

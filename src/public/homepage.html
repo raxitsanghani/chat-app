@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to Chat App</title>
+    <title>Welcome to Talksy App</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <button id="mode-switch-button" class="mode-switch-button" title="Switch Mode">
-        <span>☀️</span>
-        Light Mode
-    </button>
-    <!-- Layout switch button will be injected here by JS -->
+    <div class="top-buttons">
+        <button id="mode-switch-button" class="mode-switch-button" title="Switch Mode">
+            <span class="icon">☀️</span>
+        </button>
+        <button id="layout-switch-button" class="mode-switch-button" title="Switch UI">
+            <span class="icon">💻</span>
+        </button>
+    </div>
 
     <div class="container">
         <div class="welcome-card">
-            <h1>Welcome to Chat App</h1>
+            <h1>Welcome to Talksy App</h1>
             <p>Join the conversation with your friends!</p>
             
             <form id="joinForm" class="join-form">

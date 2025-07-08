@@ -31,7 +31,7 @@ const EMOJIS = [
     '👍', '👎', '👏', '🙌', '👐', '🤝', '🙏', '✋', '🤚', '🖐️', 
     '🖖', '👌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👊', '🤛', '🤜',
     '👋', '❤️', '💖', '💕', '💘', '💝', '💓', '💗', '💞', '💟', 
-    '🧡', '💛', '💚', '💙', '💜', '��', '🤍', '🤎'
+    '🧡', '💛', '💚', '💙', '💜', '🤎'
 ]; 
 
 const fileInput = document.getElementById('file-input');
@@ -62,14 +62,14 @@ function setTheme(theme) {
         htmlElement.classList.add('dark-mode');
         localStorage.setItem('theme', 'dark');
         if (modeSwitchButton) {
-            modeSwitchButton.textContent = '☀️ Light Mode';
+            modeSwitchButton.innerHTML = '<span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2"/><path d="M12 21v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M1 12h2"/><path d="M21 12h2"/><path d="M4.22 19.78l1.42-1.42"/><path d="M18.36 5.64l1.42-1.42"/></svg></span>';
             modeSwitchButton.title = 'Switch to Light Mode';
         }
     } else {
         htmlElement.classList.remove('dark-mode');
         localStorage.setItem('theme', 'light');
         if (modeSwitchButton) {
-            modeSwitchButton.textContent = '🌙 Dark Mode';
+            modeSwitchButton.innerHTML = '<span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg></span>';
             modeSwitchButton.title = 'Switch to Dark Mode';
         }
     }
@@ -176,7 +176,10 @@ socket.on('users update', (users) => {
     usersList.innerHTML = '';
     users.forEach(user => {
         const li = document.createElement('li');
-        li.textContent = user.username;
+        const nameBox = document.createElement('span');
+        nameBox.className = 'user-transparent-box';
+        nameBox.textContent = user.username;
+        li.appendChild(nameBox);
         if (user.online) {
             li.classList.add('online');
         }
@@ -350,7 +353,11 @@ socket.on('userList', (users) => {
     usersList.innerHTML = '';
     users.forEach(user => {
         const userItem = document.createElement('li');
-        userItem.textContent = user;
+        userItem.className = 'user-box';
+        const nameBox = document.createElement('span');
+        nameBox.className = 'user-transparent-box';
+        nameBox.textContent = user;
+        userItem.appendChild(nameBox);
         if (user === username) {
             userItem.classList.add('current-user');
         }
@@ -816,14 +823,14 @@ function setLayoutMode(mode) {
         document.body.classList.add('mobile-mode');
         localStorage.setItem('layoutMode', 'mobile');
         if (layoutSwitchButton) {
-            layoutSwitchButton.textContent = '💻 Desktop UI';
+            layoutSwitchButton.innerHTML = '<span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></span>';
             layoutSwitchButton.title = 'Switch to Desktop UI';
         }
     } else {
         document.body.classList.remove('mobile-mode');
         localStorage.setItem('layoutMode', 'desktop');
         if (layoutSwitchButton) {
-            layoutSwitchButton.textContent = '📱 Mobile UI';
+            layoutSwitchButton.innerHTML = '<span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></span>';
             layoutSwitchButton.title = 'Switch to Mobile UI';
         }
     }
@@ -835,14 +842,12 @@ if (!layoutSwitchButton) {
     layoutSwitchButton = document.createElement('button');
     layoutSwitchButton.id = 'layout-switch-button';
     layoutSwitchButton.className = 'mode-switch-button';
-    // Insert before the theme switch button
     const headerRight = document.querySelector('.header-right');
     if (headerRight) {
         headerRight.insertBefore(layoutSwitchButton, headerRight.firstChild);
     }
 }
 
-// Initial mode detection
 const savedLayoutMode = localStorage.getItem('layoutMode');
 if (savedLayoutMode) {
     setLayoutMode(savedLayoutMode);
