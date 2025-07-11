@@ -1264,7 +1264,6 @@ body {
     animation: redGlow 2s infinite;
 }
 
-/* Keep the fixed positioning for homepage mode switch button */
 body > .mode-switch-button {
     position: fixed;
     top: 20px;
@@ -1272,7 +1271,6 @@ body > .mode-switch-button {
     z-index: 1000;
 }
 
-/* Keep the static positioning for chat header buttons */
 .header-right .mode-switch-button {
     position: static;
     top: auto;
@@ -1843,7 +1841,6 @@ body > .mode-switch-button {
     }
 }
 
-/* --- MOBILE LAYOUT & MOBILE-MODE OVERRIDES --- */
 
 @media (max-width: 768px) {
   .chat-container {
@@ -1929,7 +1926,6 @@ body > .mode-switch-button {
     min-height: 44px;
     padding: 8px 12px;
   }
-  /* Hide scrollbars for mobile for a cleaner look */
   ::-webkit-scrollbar {
     display: none;
   }
@@ -2022,7 +2018,6 @@ body.mobile-mode .btn-exit, body.mobile-mode .mode-switch-button {
   min-height: 44px;
   padding: 8px 12px;
 }
-/* Hide scrollbars for mobile-mode for a cleaner look */
 body.mobile-mode ::-webkit-scrollbar {
   display: none;
 }

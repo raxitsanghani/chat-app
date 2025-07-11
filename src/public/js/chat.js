@@ -813,7 +813,6 @@ const notificationStyles = document.createElement('style');
 
 document.head.appendChild(notificationStyles);
 
-// Layout mode switch logic
 function isMobileDevice() {
     return window.matchMedia('(max-width: 768px)').matches || /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
 }
@@ -836,7 +835,6 @@ function setLayoutMode(mode) {
     }
 }
 
-// Add layout switch button
 let layoutSwitchButton = document.getElementById('layout-switch-button');
 if (!layoutSwitchButton) {
     layoutSwitchButton = document.createElement('button');

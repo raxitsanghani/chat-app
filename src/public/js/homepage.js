@@ -57,7 +57,6 @@ if (modeSwitchButton) {
     });
 }
 
-// Layout mode switch logic
 function isMobileDevice() {
     return window.matchMedia('(max-width: 768px)').matches || /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
 }
@@ -82,10 +81,8 @@ function setLayoutMode(mode) {
     }
 }
 
-// Reference the layout switch button directly
 const layoutSwitchButton = document.getElementById('layout-switch-button');
 
-// Initial mode detection
 const savedLayoutMode = localStorage.getItem('layoutMode');
 if (savedLayoutMode) {
     setLayoutMode(savedLayoutMode);

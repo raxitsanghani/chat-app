@@ -7,8 +7,8 @@ module.exports = (io, onlineUsers, User) => {
   const uploadedFiles = new Map();
   const messages = new Map();
   const uploadDir = path.join(__dirname, 'public', 'uploads');
-  const groupCallParticipants = new Set(); // Track socket IDs in the public group call
-  const roomCallParticipants = new Map(); // roomKey -> Set of socket IDs
+  const groupCallParticipants = new Set(); 
+  const roomCallParticipants = new Map(); 
 
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true, mode: 0o755 });
@@ -19,16 +19,14 @@ module.exports = (io, onlineUsers, User) => {
     let currentRoom = "public";
     let currentUserId = socket.id; 
 
-    // Periodic cleanup of stale socket IDs
     setInterval(() => {
       for (const [sockId, username] of onlineUsers.entries()) {
         if (!io.sockets.sockets.has(sockId)) {
           onlineUsers.delete(sockId);
         }
       }
-      // Emit updated user list to all clients in public room
       io.to("public").emit("userList", Array.from(onlineUsers.values()));
-    }, 10000); // every 10 seconds
+    }, 10000); 
 
     socket.on("join", async (data) => {
       try {
