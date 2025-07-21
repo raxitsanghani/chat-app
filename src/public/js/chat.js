@@ -822,14 +822,14 @@ function setLayoutMode(mode) {
         document.body.classList.add('mobile-mode');
         localStorage.setItem('layoutMode', 'mobile');
         if (layoutSwitchButton) {
-            layoutSwitchButton.innerHTML = '<span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></span>';
+            layoutSwitchButton.innerHTML = '🖥️';
             layoutSwitchButton.title = 'Switch to Desktop UI';
         }
     } else {
         document.body.classList.remove('mobile-mode');
         localStorage.setItem('layoutMode', 'desktop');
         if (layoutSwitchButton) {
-            layoutSwitchButton.innerHTML = '<span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></span>';
+            layoutSwitchButton.innerHTML = '📱';
             layoutSwitchButton.title = 'Switch to Mobile UI';
         }
     }
@@ -915,5 +915,3 @@ function handleMobileUsersBtn() {
 window.addEventListener('resize', handleMobileUsersBtn);
 document.addEventListener('DOMContentLoaded', handleMobileUsersBtn);
 handleMobileUsersBtn();
-
-
