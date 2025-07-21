@@ -859,3 +859,61 @@ layoutSwitchButton.addEventListener('click', () => {
     const currentMode = document.body.classList.contains('mobile-mode') ? 'mobile' : 'desktop';
     setLayoutMode(currentMode === 'mobile' ? 'desktop' : 'mobile');
 });
+
+// Online Users modal logic for mobile
+const onlineUsersBtn = document.getElementById('online-users-btn');
+const onlineUsersModal = document.getElementById('online-users-modal');
+const closeOnlineUsersModal = document.getElementById('close-online-users-modal');
+const onlineUsersList = document.getElementById('online-users-list');
+
+function isMobile() {
+  return window.innerWidth <= 768 || document.body.classList.contains('mobile-mode');
+}
+
+function updateOnlineUsersList() {
+  if (!onlineUsersList) return;
+  onlineUsersList.innerHTML = '';
+  const userItems = Array.from(usersList.querySelectorAll('li'));
+  userItems.forEach(li => {
+    const clone = li.cloneNode(true);
+    clone.className = '';
+    onlineUsersList.appendChild(clone);
+  });
+}
+
+function showOnlineUsersModal() {
+  updateOnlineUsersList();
+  onlineUsersModal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function hideOnlineUsersModal() {
+  onlineUsersModal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+if (onlineUsersBtn) {
+  onlineUsersBtn.addEventListener('click', showOnlineUsersModal);
+}
+if (closeOnlineUsersModal) {
+  closeOnlineUsersModal.addEventListener('click', hideOnlineUsersModal);
+}
+if (onlineUsersModal) {
+  onlineUsersModal.addEventListener('click', (e) => {
+    if (e.target === onlineUsersModal) hideOnlineUsersModal();
+  });
+}
+
+function handleMobileUsersBtn() {
+  if (onlineUsersBtn) {
+    if (isMobile()) {
+      onlineUsersBtn.style.display = 'inline-flex';
+    } else {
+      onlineUsersBtn.style.display = 'none';
+    }
+  }
+}
+window.addEventListener('resize', handleMobileUsersBtn);
+document.addEventListener('DOMContentLoaded', handleMobileUsersBtn);
+handleMobileUsersBtn();
+
+

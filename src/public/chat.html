@@ -21,6 +21,9 @@
                     <div id="room-id-display" class="room-id"></div>
                 </div>
                 <div class="header-right">
+                    <button id="online-users-btn" class="mode-switch-button" title="Show Online Users" style="display: none;">
+                        <span class="icon">👥</span>
+                    </button>
                     <button id="exit-button" class="btn-exit" title="Exit Chat">
                         <span class="icon">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/><path d="M15 12H3"/></svg>
@@ -53,6 +56,15 @@
                 <button id="emoji-button" class="emoji-button" title="Choose Emoji">😊</button>
                 <button id="send-button" class="send-button">Send</button>
             </div>
+        </div>
+    </div>
+    <div id="online-users-modal" class="online-users-modal" style="display: none;">
+        <div class="online-users-modal-content">
+            <div class="online-users-modal-header">
+                <span>Online Users</span>
+                <button id="close-online-users-modal" class="mode-switch-button" title="Close"><span class="icon">✖️</span></button>
+            </div>
+            <ul id="online-users-list" class="online-users-list"></ul>
         </div>
     </div>
     <script src="js/chat.js"></script>
