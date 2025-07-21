@@ -1884,9 +1884,10 @@ body > .mode-switch-button {
     gap: 8px;
     padding: 8px 2vw 8px 2vw;
     scroll-behavior: smooth;
+    margin-bottom: 56px; /* space for input bar */
   }
   .message-input-container {
-    position: sticky;
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
@@ -1894,12 +1895,14 @@ body > .mode-switch-button {
     background: var(--header-bg);
     box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
     border-top: 1px solid #e4e6eb;
-    min-height: 54px;
+    min-height: 56px;
     display: flex;
     align-items: center;
     flex-shrink: 0;
     gap: 8px;
-    padding: 10px 8px env(safe-area-inset-bottom, 10px) 8px;
+    padding: 8px 8px env(safe-area-inset-bottom, 8px) 8px;
+    width: 100vw;
+    max-width: 100vw;
   }
   .message-input {
     flex: 1 1 auto;
@@ -1910,6 +1913,7 @@ body > .mode-switch-button {
     border: 1px solid var(--input-border);
     margin: 0 2px;
     min-width: 0;
+    max-width: 100%;
   }
   .send-button, .emoji-button, .upload-button {
     width: 44px;
@@ -1924,19 +1928,12 @@ body > .mode-switch-button {
     border-radius: 50%;
     box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     flex-shrink: 0;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: none;
   }
-  .send-button, .emoji-button, .upload-button {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    min-height: 44px;
-    margin: 0 2px;
-    font-size: 1.3em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  .send-button:active, .emoji-button:active, .upload-button:active {
+    filter: brightness(0.95);
   }
   .reply-preview {
     font-size: 1em;
