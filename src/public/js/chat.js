@@ -822,14 +822,14 @@ function setLayoutMode(mode) {
         document.body.classList.add('mobile-mode');
         localStorage.setItem('layoutMode', 'mobile');
         if (layoutSwitchButton) {
-            layoutSwitchButton.innerHTML = '🖥️';
+            layoutSwitchButton.innerHTML = '📱';
             layoutSwitchButton.title = 'Switch to Desktop UI';
         }
     } else {
         document.body.classList.remove('mobile-mode');
         localStorage.setItem('layoutMode', 'desktop');
         if (layoutSwitchButton) {
-            layoutSwitchButton.innerHTML = '📱';
+            layoutSwitchButton.innerHTML = '🖥️';
             layoutSwitchButton.title = 'Switch to Mobile UI';
         }
     }
